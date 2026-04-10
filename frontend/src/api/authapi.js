@@ -1,0 +1,46 @@
+const BACKEND_API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+
+export const fetchProfile = async () => {
+  const token = localStorage.getItem("nexus_token") || "";
+  const response = await fetch(`${BACKEND_API_URL}/auth/profile`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!response.ok) throw new Error("Failed to fetch profile");
+  const data = await response.json();
+  return data.data;
+};
+
+export const updateProfile = async (profileData) => {
+  const token = localStorage.getItem("nexus_token") || "";
+  const response = await fetch(`${BACKEND_API_URL}/auth/profile`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ profile: profileData }) 
+  });
+  if (!response.ok) throw new Error("Failed to update profile");
+  const data = await response.json();
+  return data.data;
+};
+
+export const uploadAvatarFile = async (file) => {
+  const token = localStorage.getItem("nexus_token") || "";
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const response = await fetch(`${BACKEND_API_URL}/auth/profile/avatar`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    body: formData
+  });
+
+  if (!response.ok) throw new Error("Avatar upload failed");
+  const data = await response.json();
+  return data.data;
+};

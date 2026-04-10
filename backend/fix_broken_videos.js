@@ -1,0 +1,1 @@
+const mongoose = require('mongoose'); require('dotenv').config(); const Video = require('./models/Video'); async function fix() { await mongoose.connect(process.env.MONGO_URI); const res = await Video.updateMany({ url: /commondatastorage/ }, { $set: { url: 'https://www.w3schools.com/html/mov_bbb.mp4' } }); console.log(res); process.exit(0); } fix();
