@@ -36,10 +36,21 @@ app.use("/api/ai", aiRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/thumbnails", thumbnailRoutes);
 
+// Welcome Route
+app.get("/", (req, res) => {
+  res.json({
+    success: true,
+    message: "Welcome to Video Streaming MERN API",
+    version: "1.0.0",
+    status: "Active"
+  });
+});
+
 // Health Check
 app.get("/health", (req, res) =>
   res.json({ success: true, status: "ok", uptime: process.uptime() }),
 );
+
 
 // Error Handling
 app.use(notFound);
