@@ -2,9 +2,8 @@
 const SHEETY_API_URL =
   import.meta.env.VITE_SHEETY_API_URL ||
   "https://api.sheety.co/d61260f6816cba31f23a7b2706a55d31/videos/sheet1";
-const BACKEND_API_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5001/api";
-const SERVER_URL = "http://localhost:5001";
+import { API_BASE_URL as BACKEND_API_URL, SERVER_URL } from "./config";
+
 
 const resolveMediaUrl = (url) => {
   if (!url) return url;

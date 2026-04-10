@@ -21,6 +21,8 @@ import {
 import Sidebar from "./Sidebar";
 import { AuthContext } from "../App";
 import { getBackendAITags, uploadVideoFile } from "../api/videosapi";
+import { SERVER_URL } from "../api/config";
+
 import {
   fetchNotifications,
   markNotificationRead,
@@ -329,8 +331,10 @@ const Layout = () => {
   const resolveUrl = (url) => {
     if (!url) return url;
     if (url.startsWith("http")) return url;
-    return `http://localhost:5001${url}`;
+    return `${SERVER_URL}${url}`;
   };
+
+
 
   return (
     <div className="min-h-screen bg-[#0A0E1A] text-white flex font-sans overflow-hidden">

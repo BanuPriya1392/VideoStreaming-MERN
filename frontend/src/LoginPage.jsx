@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { AuthContext } from "./App";
+import { SERVER_URL } from "./api/config";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -45,7 +46,8 @@ const LoginPage = () => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/login`,
+        `${SERVER_URL}/api/auth/login`,
+
         {
           method: "POST",
           headers: {

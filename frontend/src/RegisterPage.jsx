@@ -14,6 +14,7 @@ import {
   CheckCircle2, // Added for success popup
   XCircle, // Added for validation feedback
 } from "lucide-react";
+import { SERVER_URL } from "./api/config";
 
 const RegisterPage = () => {
   const navigate = useNavigate();
@@ -75,7 +76,8 @@ const RegisterPage = () => {
 
     try {
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:5001"}/api/auth/register`,
+        `${SERVER_URL}/api/auth/register`,
+
         {
           method: "POST",
           headers: {
