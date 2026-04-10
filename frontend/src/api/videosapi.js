@@ -15,6 +15,8 @@ async function fetchFromBackend(category = "All", searchTerm = "") {
   const url = new URL(`${BACKEND_API_URL}/videos`);
   if (category && category !== "All") url.searchParams.append("tag", category);
   if (searchTerm) url.searchParams.append("search", searchTerm);
+  url.searchParams.append("_t", Date.now()); // Cache busting
+
 
   const response = await fetch(url.toString());
   if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);

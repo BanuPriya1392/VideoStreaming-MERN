@@ -21,7 +21,8 @@ import {
 import Sidebar from "./Sidebar";
 import { AuthContext } from "../App";
 import { getBackendAITags, uploadVideoFile } from "../api/videosapi";
-import { SERVER_URL } from "../api/config";
+import { SERVER_URL, API_BASE_URL } from "../api/config";
+import axios from "axios";
 
 import {
   fetchNotifications,
@@ -272,10 +273,9 @@ const Layout = () => {
   };
 
   const handleFinalUpload = async () => {
+    if (!videoFile) return;
     setUploadStatus("uploading");
-    const interval = setInterval(() => {
-      setProgress((prev) => Math.min(prev + 20, 90));
-    }, 200);
+    setProgress(0);
 
     try {
       const formData = new FormData();
@@ -293,15 +293,29 @@ const Layout = () => {
         formData.append("thumbnailFile", thumbnailFile);
       }
 
-      await uploadVideoFile(formData);
+      // Use axios for real progress tracking
+      const token = localStorage.getItem("nexus_token") || "";
+
+      await axios.post(`${API_BASE_URL}/videos/upload`, formData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          setProgress(percentCompleted);
+        },
+      });
+
 
       if (user) {
         fetchNotifications().then(setNotifications);
       }
 
-      clearInterval(interval);
-      setProgress(100);
       setUploadStatus("success");
+      setProgress(100);
 
       setTimeout(() => {
         setShowUploadModal(false);
@@ -309,12 +323,13 @@ const Layout = () => {
         window.location.reload();
       }, 1500);
     } catch (err) {
-      clearInterval(interval);
-      console.error(err);
-      alert("Uplink failed. Ensure your backend is running.");
+      console.error("Upload error:", err);
+      alert(err.response?.data?.message || "Uplink failed. Ensure your files are not too large and the backend is active.");
       setUploadStatus("idle");
+      setProgress(0);
     }
   };
+
 
   const resetForm = () => {
     setVideoFile(null);

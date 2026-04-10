@@ -33,7 +33,9 @@ const Profile = () => {
   const [activeTab, setActiveTab] = useState("Home");
   const [isEditing, setIsEditing] = useState(false);
   const [isManagementMode, setIsManagementMode] = useState(false);
+  const [videoSort, setVideoSort] = useState("Recent");
   const [editData, setEditData] = useState({ bio: "", avatarUrl: "", bannerUrl: "" });
+
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   
@@ -341,8 +343,26 @@ const Profile = () => {
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex items-center justify-between mb-8">
               <div className="flex gap-4">
-                <button className="bg-white text-black px-4 py-1.5 rounded-lg text-[10px] font-black uppercase">Recent</button>
-                <button className="bg-white/5 border border-white/10 px-4 py-1.5 rounded-lg text-[10px] font-black uppercase text-gray-400 font-bold">Popular</button>
+                <button 
+                  onClick={() => setVideoSort("Recent")}
+                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
+                    videoSort === "Recent" 
+                      ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
+                      : "bg-white/5 border border-white/10 text-gray-400 hover:text-white"
+                  }`}
+                >
+                  Recent
+                </button>
+                <button 
+                  onClick={() => setVideoSort("Popular")}
+                  className={`px-4 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all ${
+                    videoSort === "Popular" 
+                      ? "bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.2)]" 
+                      : "bg-white/5 border border-white/10 text-gray-400 hover:text-white"
+                  }`}
+                >
+                  Popular
+                </button>
               </div>
               {isManagementMode && (
                 <div className="bg-red-500/10 border border-red-500/20 px-4 py-1.5 rounded-lg">
@@ -353,26 +373,38 @@ const Profile = () => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {userVideos.length === 0 ? (
-                <div className="col-span-full py-20 text-center">
-                  <p className="text-gray-500 font-bold uppercase text-xs">No uplinks recorded.</p>
+                <div className="col-span-full py-20 text-center border-2 border-dashed border-white/5 rounded-3xl">
+                  <p className="text-gray-500 uppercase font-black text-xs tracking-[0.2em]">No transmissions found in this sector</p>
                 </div>
               ) : (
-                userVideos.map(video => (
-                  <div key={video.id} className="relative group">
-                    <VideoCard video={video} />
-                    {isManagementMode && (
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeleteVideo(video.id);
-                        }}
-                        className="absolute top-2 right-2 z-30 p-2 bg-red-600 text-white rounded-lg shadow-xl hover:bg-red-700 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    )}
-                  </div>
-                ))
+                [...userVideos]
+                  .sort((a, b) => {
+                    if (videoSort === "Popular") {
+                      const getVal = (v) => {
+                        const str = String(v.views || "0").toLowerCase();
+                        let num = parseFloat(str);
+                        if (str.includes("m")) num *= 1000000;
+                        else if (str.includes("k")) num *= 1000;
+                        return num;
+                      };
+                      return getVal(b) - getVal(a);
+                    }
+                    // Sort by createdAt or id as proxy for date
+                    return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+                  })
+                  .map((video) => (
+                    <div key={video.id} className="relative group/vid">
+                      <VideoCard video={video} />
+                      {isManagementMode && (
+                        <button
+                          onClick={() => handleDeleteVideo(video.id)}
+                          className="absolute top-2 right-2 z-30 p-2 bg-red-500 text-white rounded-lg shadow-lg hover:bg-red-600 transition-all opacity-0 group-hover/vid:opacity-100"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      )}
+                    </div>
+                  ))
               )}
             </div>
           </div>
