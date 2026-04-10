@@ -11,11 +11,13 @@ const resolveMediaUrl = (url) => {
   return `${SERVER_URL}${url}`;
 };
 
-async function fetchFromBackend(category = "All", searchTerm = "") {
+async function fetchFromBackend(category = "All", searchTerm = "", author = "") {
   const url = new URL(`${BACKEND_API_URL}/videos`);
   if (category && category !== "All") url.searchParams.append("tag", category);
   if (searchTerm) url.searchParams.append("search", searchTerm);
+  if (author) url.searchParams.append("author", author);
   url.searchParams.append("_t", Date.now()); // Cache busting
+
 
 
   const response = await fetch(url.toString());
@@ -98,9 +100,10 @@ export const getBackendAITags = async (title, description) => {
 /**
  * Fetch many videos (with optional filtering by category or search term)
  */
-export const fetchVideos = async (category = "All", searchTerm = "") => {
+export const fetchVideos = async (category = "All", searchTerm = "", author = "") => {
   try {
-    return await fetchFromBackend(category, searchTerm);
+    return await fetchFromBackend(category, searchTerm, author);
+
   } catch (error) {
     console.error("Failed to fetch videos from backend:", error);
     return [];

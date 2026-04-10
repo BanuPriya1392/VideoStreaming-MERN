@@ -56,17 +56,16 @@ const Profile = () => {
         bannerUrl: data.profile?.bannerUrl || "",
       });
 
-      const allVideos = await fetchVideos("All");
       const userIdentifier = (
         data.username ||
         authUser?.username ||
         authUser?.name ||
         ""
-      ).toLowerCase();
-      const myVideos = allVideos.filter(
-        (v) => (v.author || "").toLowerCase() === userIdentifier,
       );
+      
+      const myVideos = await fetchVideos("All", "", userIdentifier);
       setUserVideos(myVideos);
+
     } catch (err) {
       console.error("Failed to load profile", err);
     } finally {
