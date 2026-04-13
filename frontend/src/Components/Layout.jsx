@@ -77,12 +77,27 @@ const Layout = () => {
   // Fetch notifications and profile on mount
   useEffect(() => {
     if (user && !user.isGuest) {
-      fetchNotifications().then(setNotifications);
+      const handleAuthError = (err) => {
+        console.error("Auth error recorded:", err);
+        if (err.status === 401) {
+          console.warn("Session expired or invalid. De-authorizing...");
+          logout();
+          navigate("/login");
+        }
+      };
+
+      fetchNotifications()
+        .then(setNotifications)
+        .catch(handleAuthError);
+
       fetchProfile()
         .then(setProfile)
-        .catch((err) => console.error("Header profile fetch failed", err));
+        .catch((err) => {
+          handleAuthError(err);
+          console.error("Header profile fetch failed", err);
+        });
     }
-  }, [user]);
+  }, [user, logout, navigate]);
 
   const handleMarkAsRead = async (id) => {
     const success = await markNotificationRead(id);

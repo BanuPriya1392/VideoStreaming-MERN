@@ -360,7 +360,7 @@ const LoginPage = () => {
       <main className="flex-1 flex items-center justify-center px-4 z-10">
         <div className="w-full max-w-[450px] bg-[#0D1223]/80 backdrop-blur-2xl border border-[#00F0FF]/20 rounded-[2.5rem] p-10 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)]">
           <div className="text-center mb-10">
-            <h1 className="text-3xl font-extrabold mb-2">Welcome Back V2</h1>
+            <h1 className="text-3xl font-extrabold mb-2">Welcome Back</h1>
             <p className="text-gray-400 text-xs font-medium uppercase tracking-widest">
               Re-establish Nexus Connection
             </p>

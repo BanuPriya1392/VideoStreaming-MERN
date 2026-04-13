@@ -36,7 +36,8 @@ function App() {
   // Initialize user: Check localStorage, otherwise default to GUEST
   const [user, setUser] = useState(() => {
     const saved = localStorage.getItem("nexus_user");
-    return saved
+    const token = localStorage.getItem("nexus_token");
+    return (saved && token)
       ? JSON.parse(saved)
       : { name: "GUEST", email: "guest@nexus.core", isGuest: true };
   });
@@ -57,6 +58,7 @@ function App() {
     };
     setUser(guestUser);
     localStorage.removeItem("nexus_user");
+    localStorage.removeItem("nexus_token");
   };
 
   return (

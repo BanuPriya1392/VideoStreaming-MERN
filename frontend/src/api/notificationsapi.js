@@ -16,11 +16,18 @@ export const fetchNotifications = async () => {
       method: "GET",
       headers: getAuthHeaders(),
     });
-    if (!response.ok) return [];
+    
+    if (!response.ok) {
+      const error = new Error("Failed to fetch notifications");
+      error.status = response.status;
+      throw error;
+    }
+    
     const data = await response.json();
     return data.data || [];
   } catch (err) {
-    return [];
+    console.error("Fetch notifications error:", err);
+    throw err;
   }
 };
 
