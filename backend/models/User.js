@@ -31,6 +31,12 @@ const userSchema = new mongoose.Schema(
       favorites: [{ type: mongoose.Schema.Types.ObjectId, ref: "Video" }],
       likedVideos: [{ type: mongoose.Schema.Types.ObjectId, ref: "Video" }],
     },
+    resetPasswordOTP: {
+      type: String,
+    },
+    resetPasswordOTPExpire: {
+      type: Date,
+    },
   },
   { timestamps: true },
 );

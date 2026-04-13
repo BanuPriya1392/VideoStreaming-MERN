@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { protect } = require("../middlewares/auth.middleware");
 const { getProfile, updateProfile, uploadAvatar } = require("../controllers/user.controller");
+const sendEmail = require("../utils/sendEmail");
 const multer = require("multer");
 const path = require("path");
 
@@ -129,5 +130,84 @@ router.post("/login", async (req, res) => {
 router.get("/profile", protect, getProfile);
 router.put("/profile", protect, updateProfile);
 router.post("/profile/avatar", protect, upload.single("avatar"), uploadAvatar);
+
+// Forgot Password - Send OTP
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Please provide an email" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    // Generate 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    
+    // Set OTP and expiration (10 minutes)
+    user.resetPasswordOTP = otp;
+    user.resetPasswordOTPExpire = Date.now() + 10 * 60 * 1000;
+    await user.save();
+
+    // Send Email
+    const message = `Your password reset OTP is: ${otp}. It is valid for 10 minutes.`;
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: "Password Reset OTP",
+        message,
+      });
+
+      res.status(200).json({ success: true, message: "OTP sent to email" });
+    } catch (err) {
+      user.resetPasswordOTP = undefined;
+      user.resetPasswordOTPExpire = undefined;
+      await user.save();
+      console.error("Email sending failed:", err);
+      return res.status(500).json({ success: false, message: "Email could not be sent" });
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
+
+// Reset Password
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ success: false, message: "Please provide all fields" });
+    }
+
+    const user = await User.findOne({
+      email,
+      resetPasswordOTP: otp,
+      resetPasswordOTPExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+    }
+
+    // Set new password
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    
+    // Clear OTP fields
+    user.resetPasswordOTP = undefined;
+    user.resetPasswordOTPExpire = undefined;
+    await user.save();
+
+    res.status(200).json({ success: true, message: "Password reset successful" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Server Error" });
+  }
+});
 
 module.exports = router;

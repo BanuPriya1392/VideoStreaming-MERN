@@ -24,6 +24,13 @@ const LoginPage = () => {
   const [isResetModalOpen, setIsResetModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState("");
+  const [resetStep, setResetStep] = useState("email"); // 'email' or 'otp'
+  const [resetEmail, setResetEmail] = useState("");
+  const [resetOtp, setResetOtp] = useState("");
+  const [resetNewPassword, setResetNewPassword] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [resetError, setResetError] = useState("");
+  const [resetSuccess, setResetSuccess] = useState("");
 
   const [formData, setFormData] = useState({
     email: "",
@@ -85,10 +92,71 @@ const LoginPage = () => {
     }
   };
 
-  const handleResetRequest = (e) => {
+  const handleResetRequest = async (e) => {
     e.preventDefault();
-    setIsResetModalOpen(false);
-    alert(`Security override link sent to: ${formData.email || "your email"}`);
+    setResetLoading(true);
+    setResetError("");
+    setResetSuccess("");
+
+    try {
+      const response = await fetch(`${SERVER_URL}/api/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: resetEmail }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setResetError(data.message || "Failed to send OTP");
+        return;
+      }
+
+      setResetStep("otp");
+      setResetSuccess("OTP sent to your email!");
+    } catch (error) {
+      setResetError("Connection error. Please try again.");
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+  const handlePasswordReset = async (e) => {
+    e.preventDefault();
+    setResetLoading(true);
+    setResetError("");
+    setResetSuccess("");
+
+    try {
+      const response = await fetch(`${SERVER_URL}/api/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: resetEmail,
+          otp: resetOtp,
+          newPassword: resetNewPassword,
+        }),
+      });
+
+      const data = await response.json();
+      if (!response.ok) {
+        setResetError(data.message || "Failed to reset password");
+        return;
+      }
+
+      setResetSuccess("Password reset successful! You can now login.");
+      setTimeout(() => {
+        setIsResetModalOpen(false);
+        setResetStep("email");
+        setResetEmail("");
+        setResetOtp("");
+        setResetNewPassword("");
+        setResetSuccess("");
+      }, 2000);
+    } catch (error) {
+      setResetError("Connection error. Please try again.");
+    } finally {
+      setResetLoading(false);
+    }
   };
 
   return (
@@ -141,29 +209,115 @@ const LoginPage = () => {
               </p>
             </div>
 
-            <form onSubmit={handleResetRequest} className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
-                  Verification Email
-                </label>
-                <div className="relative group">
-                  <Mail
-                    className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#00F0FF] transition-colors"
-                    size={16}
-                  />
-                  <input
-                    type="email"
-                    placeholder="nexus_pilot@stream.io"
-                    className="w-full bg-[#0A0E1A] border border-white/5 rounded-xl pl-12 pr-4 py-4 text-sm focus:border-[#00F0FF]/50 outline-none transition-all placeholder:text-gray-700"
-                    required
-                  />
+            {resetStep === "email" ? (
+              <form onSubmit={handleResetRequest} className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                    Verification Email
+                  </label>
+                  <div className="relative group">
+                    <Mail
+                      className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#00F0FF] transition-colors"
+                      size={16}
+                    />
+                    <input
+                      type="email"
+                      placeholder="nexus_pilot@stream.io"
+                      className="w-full bg-[#0A0E1A] border border-white/5 rounded-xl pl-12 pr-4 py-4 text-sm focus:border-[#00F0FF]/50 outline-none transition-all placeholder:text-gray-700"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      required
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <button className="w-full h-14 bg-gradient-to-r from-[#00F0FF] to-[#7B68EE] text-white font-black rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 tracking-wide uppercase text-xs">
-                Send Reset Link <ArrowRight size={18} />
-              </button>
-            </form>
+                {resetError && (
+                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider">
+                    {resetError}
+                  </p>
+                )}
+
+                <button
+                  disabled={resetLoading}
+                  className="w-full h-14 bg-gradient-to-r from-[#00F0FF] to-[#7B68EE] text-white font-black rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 tracking-wide uppercase text-xs disabled:opacity-50"
+                >
+                  {resetLoading ? "Sending..." : "Send Reset OTP"}{" "}
+                  <ArrowRight size={18} />
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handlePasswordReset} className="space-y-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                      Enter 6-digit OTP
+                    </label>
+                    <div className="relative group">
+                      <RefreshCcw
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#00F0FF] transition-colors"
+                        size={16}
+                      />
+                      <input
+                        type="text"
+                        placeholder="000000"
+                        maxLength="6"
+                        className="w-full bg-[#0A0E1A] border border-white/5 rounded-xl pl-12 pr-4 py-4 text-sm focus:border-[#00F0FF]/50 outline-none transition-all placeholder:text-gray-700"
+                        value={resetOtp}
+                        onChange={(e) => setResetOtp(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                      New Security Key
+                    </label>
+                    <div className="relative group">
+                      <Lock
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#00F0FF] transition-colors"
+                        size={16}
+                      />
+                      <input
+                        type="password"
+                        placeholder="••••••••"
+                        className="w-full bg-[#0A0E1A] border border-white/5 rounded-xl pl-12 pr-4 py-4 text-sm focus:border-[#00F0FF]/50 outline-none transition-all placeholder:text-gray-700"
+                        value={resetNewPassword}
+                        onChange={(e) => setResetNewPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {resetError && (
+                  <p className="text-xs text-red-400 font-bold uppercase tracking-wider">
+                    {resetError}
+                  </p>
+                )}
+                {resetSuccess && (
+                  <p className="text-xs text-green-400 font-bold uppercase tracking-wider">
+                    {resetSuccess}
+                  </p>
+                )}
+
+                <button
+                  disabled={resetLoading}
+                  className="w-full h-14 bg-gradient-to-r from-[#00F0FF] to-[#7B68EE] text-white font-black rounded-xl shadow-[0_0_20px_rgba(0,240,255,0.2)] hover:scale-[1.01] active:scale-[0.98] transition-all flex items-center justify-center gap-2 tracking-wide uppercase text-xs disabled:opacity-50"
+                >
+                  {resetLoading ? "Processing..." : "Reset Security Key"}{" "}
+                  <ArrowRight size={18} />
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setResetStep("email")}
+                  className="w-full text-[10px] font-bold text-gray-500 uppercase tracking-widest hover:text-white transition-colors"
+                >
+                  Back to Email
+                </button>
+              </form>
+            )}
           </div>
         </div>
       )}
