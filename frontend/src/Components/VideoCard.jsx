@@ -22,13 +22,13 @@ const VideoCard = ({ video }) => {
       <Link to={`/video/${video.id}`} className="block">
         <div className="relative aspect-video rounded-2xl overflow-hidden mb-3 border border-white/5 bg-[#0D1223]">
           {/* THUMBNAIL */}
-          {/* BLURRED BACKGROUND GLOW */}
+          {/* BLURRED DYNAMIC BACKGROUND - Makes vertical videos feel wide and premium */}
           <img
             src={video.thumbnail}
             alt=""
-            className="absolute inset-x-0 bottom-0 w-full h-full object-cover scale-110 blur-[30px] opacity-40 -z-10"
+            className="absolute inset-0 w-full h-full object-cover scale-125 blur-[40px] opacity-70 transition-opacity duration-500"
           />
-          {/* MAIN CLEAR THUMBNAIL - Set to contain to ensure full face/image fits */}
+          {/* MAIN CLEAR THUMBNAIL - Contain ensures NO CUTTING of faces/content */}
           <img
             src={video.thumbnail}
             alt={video.title}

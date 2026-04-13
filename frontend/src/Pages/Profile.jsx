@@ -389,11 +389,18 @@ const Profile = () => {
             {/* FEATURED SECTION */}
             {userVideos.length > 0 ? (
               <div className="flex flex-col lg:flex-row gap-8 bg-[#0D1223]/40 border border-white/5 rounded-[2.5rem] p-6 lg:p-8">
-                <div className="lg:w-[45%] aspect-video rounded-3xl overflow-hidden relative group cursor-pointer shadow-2xl">
+                <div className="lg:w-[45%] aspect-video rounded-3xl overflow-hidden relative group cursor-pointer shadow-2xl bg-black">
+                  {/* BLURRED BACKGROUND */}
+                  <img
+                    src={userVideos[0].thumbnail}
+                    alt=""
+                    className="absolute inset-0 w-full h-full object-cover scale-125 blur-3xl opacity-60"
+                  />
+                  {/* MAIN IMAGE */}
                   <img
                     src={userVideos[0].thumbnail}
                     alt={userVideos[0].title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-contain relative z-10 contrast-[1.1] brightness-[1.1]"
                   />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="w-16 h-16 bg-[#00F0FF] rounded-full flex items-center justify-center text-black shadow-[0_0_30px_rgba(0,240,255,0.5)] scale-90 group-hover:scale-100 transition-transform">

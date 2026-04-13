@@ -17,6 +17,10 @@ import {
   Type,
   ExternalLink,
   Mic,
+  Home,
+  Compass,
+  Radio,
+  Clock,
 } from "lucide-react";
 import Sidebar from "./Sidebar";
 import { AuthContext } from "../App";
@@ -385,7 +389,7 @@ const Layout = () => {
       <Sidebar />
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* HEADER */}
-        <header className="bg-[#0A0E1A]/80 backdrop-blur-md p-4 flex justify-between items-center gap-4 border-b border-white/5 relative z-50">
+        <header className="bg-[#0A0E1A]/80 backdrop-blur-md p-2 sm:p-4 flex justify-between items-center gap-2 sm:gap-4 border-b border-white/5 relative z-50">
           <div className="relative flex-1 max-w-2xl group">
             <Search
               className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#00F0FF]"
@@ -486,13 +490,13 @@ const Layout = () => {
 
             <button
               onClick={() => setShowUploadModal(true)}
-              className="flex items-center gap-2 bg-gradient-to-r from-[#00F0FF] to-[#2D60FF] text-black px-5 py-2.5 rounded-xl font-black text-[10px] uppercase transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] animate-pulse hover:animate-none group"
+              className="flex items-center gap-2 bg-gradient-to-r from-[#00F0FF] to-[#2D60FF] text-black px-3 py-2 sm:px-5 sm:py-2.5 rounded-xl font-black text-[10px] uppercase transition-all hover:scale-105 hover:shadow-[0_0_20px_rgba(0,240,255,0.4)] animate-pulse hover:animate-none group"
             >
               <PlusSquare
                 size={16}
                 className="group-hover:rotate-90 transition-transform duration-500"
               />{" "}
-              Uplink
+              <span className="hidden sm:block">Uplink</span>
             </button>
 
             <div className="relative" onClick={(e) => e.stopPropagation()}>
@@ -509,6 +513,10 @@ const Layout = () => {
                       src={resolveUrl(profile.profile.avatarUrl)}
                       alt="Avatar"
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100";
+                      }}
                     />
                   ) : (
                     <User size={20} />
@@ -526,6 +534,10 @@ const Layout = () => {
                         }
                         className="w-full h-full object-cover"
                         alt="User"
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "https://images.unsplash.com/photo-1633332755192-727a05c4013d?w=100";
+                        }}
                       />
                     </div>
                     <div>
@@ -688,7 +700,6 @@ const Layout = () => {
                     onClick={handleFinalUpload}
                     disabled={
                       !videoFile ||
-                      aiTags.length === 0 ||
                       uploadStatus !== "idle"
                     }
                     className="w-full bg-[#00F0FF] text-black py-4 rounded-2xl font-black uppercase transition-all shadow-[0_0_20px_rgba(0,240,255,0.2)] disabled:grayscale disabled:opacity-50"
@@ -704,6 +715,7 @@ const Layout = () => {
             </div>
           </div>
         )}
+        <MobileNav />
       </div>
     </div>
   );
@@ -718,5 +730,39 @@ const MenuButton = ({ icon, text, onClick, color = "text-gray-300" }) => (
     <span className="text-xs font-bold">{text}</span>
   </button>
 );
+
+const MobileNav = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const navItems = [
+    { icon: <Home size={18} />, label: "Home", to: "/home" },
+    { icon: <Compass size={18} />, label: "Explore", to: "/explore" },
+    { icon: <Radio size={18} />, label: "Live", to: "/live" },
+    { icon: <Clock size={18} />, label: "Watch", to: "/watchlist" },
+  ];
+
+  return (
+    <div className="md:hidden fixed bottom-6 left-6 right-6 bg-[#0D1223]/60 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-3 flex justify-around items-center z-[100] shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+      {navItems.map((item) => {
+        const isActive = location.pathname === item.to;
+        return (
+          <button
+            key={item.label}
+            onClick={() => navigate(item.to)}
+            className={`flex flex-col items-center gap-1 p-2 rounded-2xl transition-all ${
+              isActive ? "text-[#00F0FF] bg-[#00F0FF]/10" : "text-gray-500"
+            }`}
+          >
+            {item.icon}
+            <span className="text-[8px] font-black uppercase tracking-widest hidden sm:block">
+              {item.label}
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+};
 
 export default Layout;

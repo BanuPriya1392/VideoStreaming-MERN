@@ -26,7 +26,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
 
   return (
-    <aside className="w-20 lg:w-64 border-r border-white/5 bg-[#0D1223]/50 backdrop-blur-xl flex flex-col p-4 h-screen sticky top-0 shrink-0">
+    <aside className="hidden md:flex md:w-20 lg:w-64 border-r border-white/5 bg-[#0D1223]/50 backdrop-blur-xl flex-col p-4 h-screen sticky top-0 shrink-0">
       {/* UPDATED LOGO: Exactly like LoginPage */}
       <div
         className="flex items-center gap-4 px-2 mb-10 group cursor-pointer"
