@@ -56,3 +56,21 @@ export const uploadAvatarFile = async (file) => {
   const data = await response.json();
   return data.data;
 };
+
+export const uploadBannerFile = async (file) => {
+  const token = localStorage.getItem("nexus_token") || "";
+  const formData = new FormData();
+  formData.append("avatar", file);
+
+  const response = await fetch(`${BACKEND_API_URL}/auth/profile/banner`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`
+    },
+    body: formData
+  });
+
+  if (!response.ok) throw new Error("Banner upload failed");
+  const data = await response.json();
+  return data.data;
+};

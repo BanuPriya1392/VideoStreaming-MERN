@@ -63,6 +63,28 @@ async function uploadAvatar(req, res, next) {
   } catch (err) {
     return next(err);
   }
+}
+
+async function uploadBanner(req, res, next) {
+  try {
+    if (!req.file) {
+      return res
+        .status(400)
+        .json({ success: false, message: "No image file provided" });
+    }
+
+    const bannerUrl = `/uploads/${req.file.filename}`;
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { "profile.bannerUrl": bannerUrl },
+      { new: true, select: "-password" },
+    );
+
+    return res.status(200).json({ success: true, data: user });
+  } catch (err) {
+    return next(err);
+  }
+}
 async function getProfileByUsername(req, res, next) {
   try {
     const user = await User.findOne({ 
@@ -80,4 +102,4 @@ async function getProfileByUsername(req, res, next) {
   }
 }
 
-module.exports = { getProfile, updateProfile, uploadAvatar, getProfileByUsername };
+module.exports = { getProfile, updateProfile, uploadAvatar, uploadBanner, getProfileByUsername };

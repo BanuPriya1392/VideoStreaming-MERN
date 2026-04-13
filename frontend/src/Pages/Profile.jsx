@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { AuthContext } from "../App";
 import { SERVER_URL } from "../api/config";
-import { fetchProfile, fetchProfileByUsername, updateProfile, uploadAvatarFile } from "../api/authapi";
+import { fetchProfile, fetchProfileByUsername, updateProfile, uploadAvatarFile, uploadBannerFile } from "../api/authapi";
 
 import { fetchVideos, deleteVideoRequest } from "../api/videosapi";
 import VideoCard from "../Components/VideoCard";
@@ -45,6 +45,7 @@ const Profile = () => {
   const [isUploading, setIsUploading] = useState(false);
 
   const fileInputRef = useRef(null);
+  const bannerInputRef = useRef(null);
   const tabs = ["Home", "Videos", "About"];
   const { username } = useParams();
   const isOwnProfile =
@@ -120,6 +121,31 @@ const Profile = () => {
     }
   };
 
+  const handleBannerClick = () => {
+    if (isEditing) {
+      bannerInputRef.current?.click();
+    }
+  };
+
+  const handleBannerChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      const updatedUser = await uploadBannerFile(file);
+      setProfile(updatedUser);
+      setEditData((prev) => ({
+        ...prev,
+        bannerUrl: updatedUser.profile.bannerUrl,
+      }));
+    } catch (err) {
+      alert("Banner upload failed.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleDeleteVideo = async (id) => {
     if (window.confirm("Permanently delete this transmission?")) {
       try {
@@ -152,7 +178,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-[#0A0E1A] text-white">
-      {/* HIDDEN FILE INPUT */}
+      {/* HIDDEN FILE INPUTS */}
       <input
         type="file"
         ref={fileInputRef}
@@ -160,9 +186,19 @@ const Profile = () => {
         accept="image/*"
         onChange={handleAvatarChange}
       />
+      <input
+        type="file"
+        ref={bannerInputRef}
+        className="hidden"
+        accept="image/*"
+        onChange={handleBannerChange}
+      />
 
       {/* CHANNEL BANNER */}
-      <section className="relative h-48 md:h-64 overflow-hidden group border-b border-white/5">
+      <section 
+        className={`relative h-48 md:h-64 overflow-hidden group border-b border-white/5 ${isEditing ? 'cursor-pointer' : ''}`}
+        onClick={handleBannerClick}
+      >
         <img
           src={
             isEditing
@@ -193,9 +229,8 @@ const Profile = () => {
                   placeholder="https://images.unsplash.com/..."
                   className="w-full bg-black/40 border border-white/10 rounded-2xl px-5 py-3 text-sm focus:border-[#00F0FF] outline-none transition-all placeholder:text-gray-600"
                 />
-                <p className="text-[9px] text-gray-500 uppercase tracking-widest leading-loose">
-                  Enter a direct image URL (Unsplash, Imgur, etc.) to project
-                  your identity across the Nexus.
+                <p className="text-[9px] text-gray-400 uppercase tracking-widest leading-loose">
+                  Enter a direct image URL above, or <span className="text-[#00F0FF] font-black cursor-pointer hover:underline" onClick={handleBannerClick}>click here to upload</span> from your device.
                 </p>
               </div>
             </div>
