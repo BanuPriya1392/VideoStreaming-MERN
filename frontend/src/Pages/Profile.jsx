@@ -206,7 +206,7 @@ const Profile = () => {
               : resolveUrl(profile?.profile?.bannerUrl) || DEFAULT_BANNER
           }
           alt="Channel Banner"
-          className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110"
+          className="w-full h-full object-cover object-center transition-all duration-1000 group-hover:scale-110 contrast-[1.1] brightness-[1.1]"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0E1A] via-transparent to-transparent opacity-80" />
 

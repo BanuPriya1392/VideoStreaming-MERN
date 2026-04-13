@@ -60,7 +60,7 @@ const Explore = () => {
                 <img
                   src={video.thumbnail}
                   alt={video.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 contrast-[1.1] brightness-[1.05]"
+                  className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700 contrast-[1.1] brightness-[1.1]"
                 />
 
                 {/* WATCH LATER BUTTON */}

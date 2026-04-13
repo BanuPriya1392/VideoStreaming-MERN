@@ -28,12 +28,12 @@ const VideoCard = ({ video }) => {
             alt=""
             className="absolute inset-x-0 bottom-0 w-full h-full object-cover scale-110 blur-[30px] opacity-40 -z-10"
           />
-          {/* MAIN CLEAR THUMBNAIL */}
+          {/* MAIN CLEAR THUMBNAIL - Set to contain to ensure full face/image fits */}
           <img
             src={video.thumbnail}
             alt={video.title}
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 contrast-[1.1] brightness-[1.05] relative z-10"
+            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105 contrast-[1.15] brightness-[1.1] relative z-10 drop-shadow-2xl"
           />
 
           {/* OVERLAY ON HOVER */}

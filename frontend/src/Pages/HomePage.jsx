@@ -27,14 +27,14 @@ const HomePage = () => {
       {/* HERO SECTION */}
       <section
         onClick={() => featuredId && navigate(`/video/${featuredId}`)}
-        className={`relative h-[350px] rounded-[2rem] overflow-hidden group shadow-2xl shadow-blue-500/10 ${featuredId ? 'cursor-pointer' : 'cursor-default'}`}
+        className={`relative h-[200px] md:h-[350px] rounded-[2rem] overflow-hidden group shadow-2xl shadow-blue-500/10 ${featuredId ? 'cursor-pointer' : 'cursor-default'}`}
       >
         <img
           src={
             featuredVideo?.thumbnail ||
             "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=1200"
           }
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+          className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105 contrast-[1.1] brightness-[1.1]"
           alt="Featured"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0E1A] via-[#0A0E1A]/30 to-transparent" />
