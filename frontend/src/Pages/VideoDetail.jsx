@@ -110,7 +110,7 @@ const VideoDetail = () => {
     if (window.confirm("Are you sure you want to permanently delete this transmission?")) {
       try {
         await deleteVideoRequest(videoData._id || videoData.id);
-        navigate("/");
+        navigate("/home");
       } catch (err) {
         alert("Failed to delete the video.");
       }
