@@ -119,9 +119,13 @@ const VideoCard = ({ video }) => {
 
         {/* METADATA */}
         <div className="flex gap-3 px-1">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-gray-800 to-gray-900 border border-white/10 flex-shrink-0 flex items-center justify-center text-[10px] font-bold text-gray-500">
+          <Link 
+            to={`/profile/${video.author}`}
+            onClick={(e) => e.stopPropagation()}
+            className="w-9 h-9 rounded-full bg-gradient-to-br from-[#00F0FF]/20 to-[#7000FF]/20 border border-white/5 flex-shrink-0 flex items-center justify-center text-[10px] font-black text-[#00F0FF] hover:scale-110 hover:shadow-[0_0_10px_rgba(0,240,255,0.3)] transition-all"
+          >
             {video.author ? video.author[0] : "N"}
-          </div>
+          </Link>
           <div className="space-y-1">
             <h4 className="font-bold text-sm line-clamp-2 leading-snug group-hover:text-[#00F0FF] transition-colors">
               {video.title}

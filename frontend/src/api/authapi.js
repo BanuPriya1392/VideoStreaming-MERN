@@ -17,6 +17,13 @@ export const fetchProfile = async () => {
   return data.data;
 };
 
+export const fetchProfileByUsername = async (username) => {
+  const response = await fetch(`${BACKEND_API_URL}/auth/profile/${username}`);
+  if (!response.ok) throw new Error("User not found");
+  const data = await response.json();
+  return data.data;
+};
+
 export const updateProfile = async (profileData) => {
   const token = localStorage.getItem("nexus_token") || "";
   const response = await fetch(`${BACKEND_API_URL}/auth/profile`, {

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext, useRef } from "react";
+import { useParams } from "react-router-dom";
 import {
   User as UserIcon,
   Mail,
@@ -21,7 +22,7 @@ import {
 } from "lucide-react";
 import { AuthContext } from "../App";
 import { SERVER_URL } from "../api/config";
-import { fetchProfile, updateProfile, uploadAvatarFile } from "../api/authapi";
+import { fetchProfile, fetchProfileByUsername, updateProfile, uploadAvatarFile } from "../api/authapi";
 
 import { fetchVideos, deleteVideoRequest } from "../api/videosapi";
 import VideoCard from "../Components/VideoCard";
@@ -45,27 +46,33 @@ const Profile = () => {
 
   const fileInputRef = useRef(null);
   const tabs = ["Home", "Videos", "About"];
+  const { username } = useParams();
+  const isOwnProfile =
+    !username || username.toLowerCase() === authUser?.username?.toLowerCase() || username.toLowerCase() === authUser?.name?.toLowerCase();
 
   const loadProfileData = async () => {
+    setIsLoading(true);
     try {
-      const data = await fetchProfile();
-      setProfile(data);
-      setEditData({
-        bio: data.profile?.bio || "",
-        avatarUrl: data.profile?.avatarUrl || "",
-        bannerUrl: data.profile?.bannerUrl || "",
-      });
-
-      const userIdentifier = (
-        data.username ||
-        authUser?.username ||
-        authUser?.name ||
-        ""
-      );
+      let data;
+      if (isOwnProfile) {
+        data = await fetchProfile();
+      } else {
+        data = await fetchProfileByUsername(username);
+      }
       
+      setProfile(data);
+      
+      if (isOwnProfile) {
+        setEditData({
+          bio: data.profile?.bio || "",
+          avatarUrl: data.profile?.avatarUrl || "",
+          bannerUrl: data.profile?.bannerUrl || "",
+        });
+      }
+
+      const userIdentifier = data.username || data.name || "";
       const myVideos = await fetchVideos("All", "", userIdentifier);
       setUserVideos(myVideos);
-
     } catch (err) {
       console.error("Failed to load profile", err);
     } finally {
@@ -75,7 +82,7 @@ const Profile = () => {
 
   useEffect(() => {
     loadProfileData();
-  }, [authUser.name]);
+  }, [username, authUser.name]);
 
   const handleUpdate = async () => {
     try {
@@ -267,7 +274,7 @@ const Profile = () => {
             </div>
 
             <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-3">
-              {!isEditing ? (
+              {isOwnProfile && !isEditing && (
                 <>
                   <button
                     onClick={() => setIsEditing(true)}
@@ -290,7 +297,8 @@ const Profile = () => {
                     {isManagementMode ? "Exit Management" : "Manage Videos"}
                   </button>
                 </>
-              ) : (
+              )}
+              {isOwnProfile && isEditing && (
                 <div className="flex gap-2">
                   <button
                     onClick={handleUpdate}
@@ -306,6 +314,11 @@ const Profile = () => {
                     Cancel
                   </button>
                 </div>
+              )}
+              {!isOwnProfile && (
+                 <button className="bg-[#00F0FF] text-black px-8 py-2.5 rounded-full font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(0,240,255,0.3)] hover:scale-105 transition-all">
+                   Follow Operative
+                 </button>
               )}
             </div>
           </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
-import { Play, Filter, Search as SearchIcon, Clock } from "lucide-react";
+import { Play, Filter, Search as SearchIcon, Clock, CheckCircle2 } from "lucide-react";
 import { useLibrary } from "../context/LibraryContext";
 import { fetchVideos } from "../api/videosapi.js";
 const Explore = () => {
@@ -103,9 +103,13 @@ const Explore = () => {
                 <h3 className="font-bold text-sm line-clamp-2 group-hover:text-[#00F0FF] transition-colors uppercase tracking-tight">
                   {video.title}
                 </h3>
-                <p className="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-widest">
-                  {video.author}
-                </p>
+                <Link 
+                  to={`/profile/${video.author}`}
+                  onClick={(e) => e.stopPropagation()}
+                  className="text-[10px] text-gray-500 mt-2 font-bold uppercase tracking-widest hover:text-[#00F0FF] transition-colors flex items-center gap-1"
+                >
+                  {video.author} <CheckCircle2 size={10} />
+                </Link>
                 <div className="flex items-center justify-between mt-4">
                   <span className="text-[9px] text-gray-600 font-black">
                     {video.views} Views

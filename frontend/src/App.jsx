@@ -142,6 +142,7 @@ function App() {
               />
               <Route path="video/:id" element={<VideoDetail />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="profile/:username" element={<Profile />} />
               <Route path="settings" element={<Settings />} />
             </Route>
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from "react";
-import { useParams, useLocation, useNavigate } from "react-router-dom";
-import { ThumbsUp, Reply, ChevronDown, Trash2, X, Copy, MessageSquare, Send, User, Play, Clock } from "lucide-react";
+import { useParams, useLocation, useNavigate, Link } from "react-router-dom";
+import { ThumbsUp, Reply, ChevronDown, Trash2, X, Copy, MessageSquare, Send, User, Play, Clock, CheckCircle2 } from "lucide-react";
 import { FaWhatsapp, FaFacebook, FaPinterest, FaLinkedin, FaYoutube } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { fetchVideos, fetchVideoById, deleteVideoRequest, fetchComments, postComment, fetchRecommendations } from "../api/videosapi.js";
@@ -184,21 +184,22 @@ const VideoDetail = () => {
             {videoData.title}
           </h1>
           <div className="flex items-center justify-between border-b border-white/5 pb-6">
-            <div className="flex items-center gap-4">
+            <Link to={`/profile/${videoData.author}`} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
               <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#00F0FF] to-[#7B68EE] p-0.5">
-                <img
-                  src={videoData.thumbnail}
-                  className="w-full h-full object-cover rounded-full"
-                  alt="avatar"
-                />
+                <div className="w-full h-full bg-[#0D1223] rounded-full flex items-center justify-center font-bold text-[#00F0FF]">
+                  {videoData.author ? videoData.author[0] : "N"}
+                </div>
               </div>
               <div>
-                <p className="font-bold">{videoData.author}</p>
+                <p className="font-bold flex items-center gap-1">
+                   {videoData.author} 
+                   <CheckCircle2 size={14} className="text-[#00F0FF]" />
+                </p>
                 <p className="text-xs text-gray-500">
                   {videoData.duration || "0:00"} • {videoData.views} Views • Sector {id}
                 </p>
               </div>
-            </div>
+            </Link>
 
             {/* ACTION BUTTONS */}
             <div className="flex gap-2">

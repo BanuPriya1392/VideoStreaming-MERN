@@ -63,6 +63,21 @@ async function uploadAvatar(req, res, next) {
   } catch (err) {
     return next(err);
   }
+async function getProfileByUsername(req, res, next) {
+  try {
+    const user = await User.findOne({ 
+      username: { $regex: new RegExp(`^${req.params.username}$`, "i") } 
+    }).select("-password").lean();
+    
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
+    }
+    return res.status(200).json({ success: true, data: user });
+  } catch (err) {
+    return next(err);
+  }
 }
 
-module.exports = { getProfile, updateProfile, uploadAvatar };
+module.exports = { getProfile, updateProfile, uploadAvatar, getProfileByUsername };

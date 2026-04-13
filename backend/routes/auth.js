@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const { protect } = require("../middlewares/auth.middleware");
-const { getProfile, updateProfile, uploadAvatar } = require("../controllers/user.controller");
+const { getProfile, updateProfile, uploadAvatar, getProfileByUsername } = require("../controllers/user.controller");
 const sendEmail = require("../utils/sendEmail");
 const multer = require("multer");
 const path = require("path");
@@ -128,6 +128,7 @@ router.post("/login", async (req, res) => {
 });
 
 router.get("/profile", protect, getProfile);
+router.get("/profile/:username", getProfileByUsername);
 router.put("/profile", protect, updateProfile);
 router.post("/profile/avatar", protect, upload.single("avatar"), uploadAvatar);
 
