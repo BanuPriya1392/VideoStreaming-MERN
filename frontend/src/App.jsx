@@ -74,9 +74,7 @@ function App() {
 
             <Route 
               path="/login" 
-              element={
-                user && !user.isGuest ? <Navigate to="/home" replace /> : <LoginPage />
-              } 
+              element={<LoginPage />} 
             />
             <Route path="/register" element={<RegisterPage />} />
 

@@ -66,7 +66,7 @@ const WatchlistPage = () => {
                 <img
                   src={video.thumbnail || video.thumb}
                   alt={video.title}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 contrast-[1.1] brightness-[1.05]"
                 />
                 <div className="absolute bottom-2 right-2 bg-black/80 px-2 py-0.5 rounded text-[10px] font-bold text-[#00F0FF] border border-[#00F0FF]/20">
                   {video.duration || "12:45"}

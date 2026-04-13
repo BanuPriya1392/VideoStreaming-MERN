@@ -75,7 +75,7 @@ const History = () => {
               <img
                 src={video.thumbnail}
                 alt={video.title}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-80 group-hover:opacity-100"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 contrast-[1.1] brightness-[1.05]"
               />
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <Play className="w-8 h-8 text-[#00F0FF] fill-[#00F0FF]" />

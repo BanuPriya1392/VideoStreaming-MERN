@@ -22,11 +22,18 @@ const VideoCard = ({ video }) => {
       <Link to={`/video/${video.id}`} className="block">
         <div className="relative aspect-video rounded-2xl overflow-hidden mb-3 border border-white/5 bg-[#0D1223]">
           {/* THUMBNAIL */}
+          {/* BLURRED BACKGROUND GLOW */}
+          <img
+            src={video.thumbnail}
+            alt=""
+            className="absolute inset-x-0 bottom-0 w-full h-full object-cover scale-110 blur-[30px] opacity-40 -z-10"
+          />
+          {/* MAIN CLEAR THUMBNAIL */}
           <img
             src={video.thumbnail}
             alt={video.title}
             referrerPolicy="no-referrer"
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 contrast-[1.1] brightness-[1.05] relative z-10"
           />
 
           {/* OVERLAY ON HOVER */}

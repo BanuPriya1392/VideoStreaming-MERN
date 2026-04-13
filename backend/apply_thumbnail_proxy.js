@@ -14,7 +14,7 @@ async function applyThumbnailProxy() {
     const bulkOps = videos.map(video => {
       if (video.thumbnail && video.thumbnail.includes("images.unsplash.com") && !video.thumbnail.includes("wsrv.nl")) {
         // wsrv.nl proxy strips referrers and bypasses hotlinking restrictions
-        const proxiedUrl = `https://wsrv.nl/?url=${encodeURIComponent(video.thumbnail)}`;
+        const proxiedUrl = `https://wsrv.nl/?url=${encodeURIComponent(video.thumbnail)}&q=100&output=webp`;
         count++;
         return {
           updateOne: {

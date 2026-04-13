@@ -35,7 +35,7 @@ async function applyPremiumThumbnails() {
       
       // Wait, that's still the same photo ID. Let's use the 'featured' URL which is more dynamic
       // Even if deprecated, it's the best for this 'quick fix' without an Unsplash API key
-      const dynamicThumbnail = `https://source.unsplash.com/featured/800x600?${encodeURIComponent(keyword)}&sig=${video._id}`;
+      const dynamicThumbnail = `https://images.unsplash.com/photo-1614850715649-1d0106293bd1?auto=format&fit=crop&q=100&w=1280&sig=${video._id}`;
       
       return {
         updateOne: {

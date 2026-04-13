@@ -34,7 +34,7 @@ async function applyFinalThumbnails() {
       // LoremFlickr is a stable and reliable service for themed images.
       // The 'lock' parameter ensures each video gets a unique image.
       // We use a combination of category and a unique index to ensure no overlaps.
-      const finalThumbnail = `https://loremflickr.com/800/600/${keyword}?lock=${index + 1000}`;
+      const finalThumbnail = `https://loremflickr.com/1280/720/${keyword}?lock=${index + 1000}`;
       
       return {
         updateOne: {

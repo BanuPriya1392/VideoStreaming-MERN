@@ -361,7 +361,7 @@ const VideoDetail = () => {
               <div className="w-32 h-20 bg-gray-900 rounded-xl overflow-hidden shrink-0 relative border border-white/5">
                 <img
                   src={video.thumbnail}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100"
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 contrast-[1.1] brightness-[1.05]"
                   alt={video.title}
                 />
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

@@ -227,27 +227,30 @@ const Layout = () => {
         video.currentTime = Math.max(video.duration * 0.1, 0.5);
       };
       video.onseeked = () => {
-        const canvas = document.createElement("canvas");
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // Small delay to ensure the frame is fully decoded and sharp for HD
+        setTimeout(() => {
+          const canvas = document.createElement("canvas");
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext("2d");
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        canvas.toBlob(
-          (blob) => {
-            const thumbFile = new File([blob], "thumbnail.jpg", {
-              type: "image/jpeg",
-            });
-            const duration = video.duration;
-            const minutes = Math.floor(duration / 60);
-            const seconds = Math.floor(duration % 60);
-            const durationStr = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-            resolve({ thumbFile, duration: durationStr });
-          },
-          "image/jpeg",
-          0.7,
-        );
-        URL.revokeObjectURL(video.src);
+          canvas.toBlob(
+            (blob) => {
+              const thumbFile = new File([blob], "thumbnail.jpg", {
+                type: "image/jpeg",
+              });
+              const duration = video.duration;
+              const minutes = Math.floor(duration / 60);
+              const seconds = Math.floor(duration % 60);
+              const durationStr = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+              resolve({ thumbFile, duration: durationStr });
+            },
+            "image/jpeg",
+            1.0,
+          );
+          URL.revokeObjectURL(video.src);
+        }, 150);
       };
     });
   };
