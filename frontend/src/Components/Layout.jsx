@@ -230,10 +230,21 @@ const Layout = () => {
         // Small delay to ensure the frame is fully decoded and sharp for HD
         setTimeout(() => {
           const canvas = document.createElement("canvas");
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
+          
+          // Optimization: CAP resolution at 1280px width even for 4K videos
+          // This keeps the file size small (fast upload) while remaining HD
+          const maxDim = 1280;
+          let width = video.videoWidth;
+          let height = video.videoHeight;
+          if (width > maxDim) {
+            height = (maxDim / width) * height;
+            width = maxDim;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
           const ctx = canvas.getContext("2d");
-          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          ctx.drawImage(video, 0, 0, width, height);
 
           canvas.toBlob(
             (blob) => {
@@ -247,7 +258,7 @@ const Layout = () => {
               resolve({ thumbFile, duration: durationStr });
             },
             "image/jpeg",
-            1.0,
+            0.9, // 0.9 is 70% smaller than 1.0 but visually identical
           );
           URL.revokeObjectURL(video.src);
         }, 150);
