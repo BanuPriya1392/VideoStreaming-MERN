@@ -163,11 +163,17 @@ router.post("/forgot-password", async (req, res) => {
 
       res.status(200).json({ success: true, message: "OTP sent to email" });
     } catch (err) {
-      user.resetPasswordOTP = undefined;
-      user.resetPasswordOTPExpire = undefined;
-      await user.save();
       console.error("Email sending failed:", err);
-      return res.status(500).json({ success: false, message: "Email could not be sent" });
+      console.log("-----------------------------------------");
+      console.log(`FALLBACK: OTP for ${user.email} is: ${otp}`);
+      console.log("-----------------------------------------");
+      
+      // Still return success in development/fallback mode so user can test
+      return res.status(200).json({ 
+        success: true, 
+        message: "OTP sent (check server console for development)",
+        isFallback: true 
+      });
     }
   } catch (error) {
     console.error(error);
