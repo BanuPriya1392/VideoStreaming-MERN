@@ -23,6 +23,15 @@ import Liked from "./Pages/Liked";
 // --- AUTH CONTEXT ---
 export const AuthContext = createContext();
 
+// --- PROTECTED ROUTE COMPONENT ---
+const ProtectedRoute = ({ children }) => {
+  const { user } = useContext(AuthContext);
+  if (!user || user.isGuest) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
 function App() {
   // Initialize user: Check localStorage, otherwise default to GUEST
   const [user, setUser] = useState(() => {
@@ -55,20 +64,22 @@ function App() {
       <Router>
         <LibraryProvider>
           <Routes>
-            {/* 1. Default Entry: Always show Login if they haven't logged in yet */}
-            {/* If user is GUEST, "/" shows LoginPage. If Logged in, goes to home */}
+            {/* 1. Default Entry: Always start at /login */}
             <Route
               path="/"
-              element={
-                user?.isGuest ? <LoginPage /> : <Navigate to="/home" replace />
-              }
+              element={<Navigate to="/login" replace />}
             />
 
-            <Route path="/login" element={<LoginPage />} />
+            <Route 
+              path="/login" 
+              element={
+                user && !user.isGuest ? <Navigate to="/home" replace /> : <LoginPage />
+              } 
+            />
             <Route path="/register" element={<RegisterPage />} />
 
-            {/* 2. Public Access Routes: Layout is accessible to GUEST and Logged-in users */}
-            <Route element={<Layout />}>
+            {/* 2. Protected Routes: Re-routing GUESTs to login */}
+            <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
               <Route path="home" element={<HomePage />} />
               <Route path="explore" element={<Explore />} />
               <Route
