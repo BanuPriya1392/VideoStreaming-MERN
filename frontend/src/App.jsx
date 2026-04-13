@@ -69,7 +69,7 @@ function App() {
             {/* 1. Default Entry: Always start at /login */}
             <Route
               path="/"
-              element={<Navigate to="/home" replace />}
+              element={<Navigate to="/login" replace />}
             />
 
             <Route 
