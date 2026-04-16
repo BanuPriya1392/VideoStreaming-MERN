@@ -12,10 +12,6 @@ const cloudinaryStorage = new CloudinaryStorage({
     return {
       folder: isVideo ? "nexus/videos" : "nexus/thumbnails",
       resource_type: isVideo ? "video" : "image",
-      allowed_formats: isVideo
-        ? "mp4,mov,avi,mkv,webm"
-        : "jpg,jpeg,png,webp",
-      ...(isVideo ? {} : { transformation: "q_auto,w_1280" }),
     };
   },
 });
