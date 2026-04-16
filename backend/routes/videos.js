@@ -7,12 +7,9 @@ const cloudinary = require("../config/cloudinary");
 // Smart Cloudinary storage — detects video vs image by fieldname
 const cloudinaryStorage = new CloudinaryStorage({
   cloudinary,
-  params: async (req, file) => {
-    const isVideo = file.fieldname === "videoFile";
-    return {
-      folder: isVideo ? "nexus/videos" : "nexus/thumbnails",
-      resource_type: isVideo ? "video" : "image",
-    };
+  params: {
+    folder: "nexus",
+    resource_type: "auto",
   },
 });
 
