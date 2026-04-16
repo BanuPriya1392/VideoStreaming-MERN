@@ -164,7 +164,7 @@ const VideoDetail = () => {
               key={videoData.id}
               src={videoData.url}
               controls
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover"
             />
           )}
         </div>
@@ -185,9 +185,13 @@ const VideoDetail = () => {
           </h1>
           <div className="flex items-center justify-between border-b border-white/5 pb-6">
             <Link to={`/profile/${videoData.author}`} className="flex items-center gap-4 hover:opacity-80 transition-opacity">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#00F0FF] to-[#7B68EE] p-0.5">
-                <div className="w-full h-full bg-[#0D1223] rounded-full flex items-center justify-center font-bold text-[#00F0FF]">
-                  {videoData.author ? videoData.author[0] : "N"}
+              <div className="w-12 h-12 rounded-full overflow-hidden bg-gradient-to-tr from-[#00F0FF] to-[#7B68EE] p-0.5">
+                <div className="w-full h-full bg-[#0D1223] overflow-hidden rounded-full flex items-center justify-center font-bold text-[#00F0FF]">
+                  {videoData.authorAvatar ? (
+                    <img src={videoData.authorAvatar} alt={videoData.author} className="w-full h-full object-cover" />
+                  ) : (
+                    videoData.author ? videoData.author[0] : "N"
+                  )}
                 </div>
               </div>
               <div>
@@ -368,7 +372,7 @@ const VideoDetail = () => {
                 <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <Play size={16} fill="white" className="text-white scale-75 group-hover:scale-100 transition-transform" />
                 </div>
-                <span className="absolute bottom-1 right-1 bg-black/80 px-1 py-0.5 rounded text-[8px] font-black text-[#00F0FF] border border-[#00F0FF]/20">
+                <span className="absolute bottom-1 right-1 bg-black/80 px-1 py-0.5 rounded text-[8px] font-black text-[#00F0FF] border border-[#00F0FF]/20 z-10">
                   {video.duration || "0:00"}
                 </span>
               </div>

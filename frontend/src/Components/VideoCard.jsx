@@ -112,7 +112,7 @@ const VideoCard = ({ video }) => {
           )}
 
           {/* DURATION TAG */}
-          <span className="absolute bottom-2 right-2 bg-black/80 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold text-[#00F0FF] border border-[#00F0FF]/20">
+          <span className="absolute bottom-2 right-2 z-20 bg-black/80 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold text-[#00F0FF] border border-[#00F0FF]/20">
             {video.duration || "12:45"}
           </span>
         </div>
@@ -122,9 +122,13 @@ const VideoCard = ({ video }) => {
           <Link 
             to={`/profile/${video.author}`}
             onClick={(e) => e.stopPropagation()}
-            className="w-9 h-9 rounded-full bg-gradient-to-br from-[#00F0FF]/20 to-[#7000FF]/20 border border-white/5 flex-shrink-0 flex items-center justify-center text-[10px] font-black text-[#00F0FF] hover:scale-110 hover:shadow-[0_0_10px_rgba(0,240,255,0.3)] transition-all"
+            className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-[#00F0FF]/20 to-[#7000FF]/20 border border-white/5 flex-shrink-0 flex items-center justify-center text-[10px] font-black text-[#00F0FF] hover:scale-110 hover:shadow-[0_0_10px_rgba(0,240,255,0.3)] transition-all"
           >
-            {video.author ? video.author[0] : "N"}
+            {video.authorAvatar ? (
+               <img src={video.authorAvatar} alt="author" className="w-full h-full object-cover" />
+            ) : (
+               video.author ? video.author[0] : "N"
+            )}
           </Link>
           <div className="space-y-1">
             <h4 className="font-bold text-sm line-clamp-2 leading-snug group-hover:text-[#00F0FF] transition-colors">

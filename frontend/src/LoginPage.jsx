@@ -112,7 +112,7 @@ const LoginPage = () => {
       }
 
       setResetStep("otp");
-      setResetSuccess("OTP sent to your email!");
+      setResetSuccess(data.message || "Verification code sent to your email!");
     } catch (error) {
       setResetError("Connection error. Please try again.");
     } finally {
@@ -131,8 +131,8 @@ const LoginPage = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: resetEmail,
-          otp: resetOtp,
+          email: resetEmail.trim().toLowerCase(),
+          otp: resetOtp.trim(),
           newPassword: resetNewPassword,
         }),
       });

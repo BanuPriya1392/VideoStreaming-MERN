@@ -13,6 +13,7 @@ function sheetyRowToDoc(row) {
     views: row.views,
     time: row.time,
     url: row.url,
+    duration: row.duration || "0:00",
     thumbnail: row.thumbnail || "",
     description: row.description || "",
   };
@@ -27,6 +28,7 @@ function docToSheetyPayload(doc) {
       views: doc.views,
       time: doc.time,
       url: doc.url,
+      duration: doc.duration,
       thumbnail: doc.thumbnail,
       description: doc.description,
     },
@@ -88,9 +90,20 @@ async function getAllVideos(req, res, next) {
       .skip(skip)
       .limit(limit)
       .lean();
+
+    const users = await User.find({ username: { $in: videos.map(v => v.author) } }).lean();
+    const userMap = {};
+    users.forEach(u => {
+      userMap[u.username] = u.profile?.avatarUrl;
+    });
+    const videosWithAvatar = videos.map(v => {
+      v.authorAvatar = userMap[v.author] || null;
+      return v;
+    });
+
     return res.status(200).json({
       success: true,
-      data: videos,
+      data: videosWithAvatar,
       pagination: {
         total: total,
         page: page,
@@ -122,6 +135,8 @@ async function getVideoById(req, res, next) {
         .status(404)
         .json({ success: false, message: "Video not found" });
     }
+    const user = await User.findOne({ username: video.author }).lean();
+    video.authorAvatar = user?.profile?.avatarUrl || null;
     return res.status(200).json({ success: true, data: video });
   } catch (err) {
     return next(err);
@@ -224,7 +239,11 @@ async function uploadVideo(req, res, next) {
       text: `Uplink successful: ${title} has been integrated into the Nexus.`,
     });
 
-    return res.status(201).json({ success: true, data: video });
+    const videoObj = video.toObject();
+    const userObj = await User.findOne({ username: author }).lean();
+    videoObj.authorAvatar = userObj?.profile?.avatarUrl || null;
+
+    return res.status(201).json({ success: true, data: videoObj });
   } catch (err) {
     return next(err);
   }
@@ -392,7 +411,17 @@ async function getRecommendations(req, res, next) {
       related = [...related, ...fill];
     }
 
-    return res.status(200).json({ success: true, data: related });
+    const users = await User.find({ username: { $in: related.map(v => v.author) } }).lean();
+    const userMap = {};
+    users.forEach(u => {
+      userMap[u.username] = u.profile?.avatarUrl;
+    });
+    const relatedWithAvatar = related.map(v => {
+      v.authorAvatar = userMap[v.author] || null;
+      return v;
+    });
+
+    return res.status(200).json({ success: true, data: relatedWithAvatar });
   } catch (err) {
     return next(err);
   }

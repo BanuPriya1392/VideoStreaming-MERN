@@ -8,15 +8,7 @@ const sendEmail = require("../utils/sendEmail");
 const multer = require("multer");
 const path = require("path");
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, "avatar-" + uniqueSuffix + path.extname(file.originalname));
-  },
-});
+const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
 
 const router = express.Router();
@@ -131,7 +123,7 @@ router.get("/profile", protect, getProfile);
 router.get("/profile/:username", getProfileByUsername);
 router.put("/profile", protect, updateProfile);
 router.post("/profile/avatar", protect, upload.single("avatar"), uploadAvatar);
-router.post("/profile/banner", protect, upload.single("avatar"), uploadBanner);
+router.post("/profile/banner", protect, upload.single("banner"), uploadBanner);
 
 // Forgot Password - Send OTP
 router.post("/forgot-password", async (req, res) => {
@@ -141,9 +133,10 @@ router.post("/forgot-password", async (req, res) => {
       return res.status(400).json({ success: false, message: "Please provide an email" });
     }
 
-    const user = await User.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) {
-      return res.status(404).json({ success: false, message: "User not found" });
+      return res.status(404).json({ success: false, message: "No account found with this email" });
     }
 
     // Generate 6-digit OTP
@@ -192,14 +185,17 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).json({ success: false, message: "Please provide all fields" });
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedOtp = otp.trim();
+
     const user = await User.findOne({
-      email,
-      resetPasswordOTP: otp,
-      resetPasswordOTPExpire: { $gt: Date.now() },
+      email: normalizedEmail,
+      resetPasswordOTP: normalizedOtp,
+      resetPasswordOTPExpire: { $gt: new Date() },
     });
 
     if (!user) {
-      return res.status(400).json({ success: false, message: "Invalid or expired OTP" });
+      return res.status(400).json({ success: false, message: "Invalid verification code or code expired" });
     }
 
     // Set new password
