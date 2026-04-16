@@ -147,6 +147,14 @@ router.post("/forgot-password", async (req, res) => {
     user.resetPasswordOTPExpire = Date.now() + 10 * 60 * 1000;
     await user.save();
 
+    // ✅ ALWAYS log OTP to console for easy development access
+    console.log("\n=========================================");
+    console.log(`🔑 PASSWORD RESET OTP`);
+    console.log(`📧 Email : ${user.email}`);
+    console.log(`🔢 OTP   : ${otp}`);
+    console.log(`⏳ Expires in 10 minutes`);
+    console.log("=========================================\n");
+
     // Send Email
     const message = `Your password reset OTP is: ${otp}. It is valid for 10 minutes.`;
     try {
