@@ -1,24 +1,30 @@
 const express = require("express");
 const router = express.Router();
 const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+const cloudinary = require("../config/cloudinary");
 
-if (!fs.existsSync("uploads")) {
-  fs.mkdirSync("uploads");
-}
-
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, "uploads/");
-  },
-  filename: function (req, file, cb) {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    const prefix = file.fieldname === "thumbnailFile" ? "thumb-" : "vid-";
-    cb(null, prefix + uniqueSuffix + path.extname(file.originalname));
+// Smart Cloudinary storage — detects video vs image by fieldname
+const cloudinaryStorage = new CloudinaryStorage({
+  cloudinary,
+  params: async (req, file) => {
+    const isVideo = file.fieldname === "videoFile";
+    return {
+      folder: isVideo ? "nexus/videos" : "nexus/thumbnails",
+      resource_type: isVideo ? "video" : "image",
+      allowed_formats: isVideo
+        ? ["mp4", "mov", "avi", "mkv", "webm"]
+        : ["jpg", "jpeg", "png", "webp"],
+      ...(isVideo ? {} : { transformation: [{ width: 1280, quality: "auto" }] }),
+    };
   },
 });
-const upload = multer({ storage: storage });
+
+const upload = multer({
+  storage: cloudinaryStorage,
+  limits: { fileSize: 500 * 1024 * 1024 }, // 500MB max
+});
+
 const uploadFields = upload.fields([
   { name: "videoFile", maxCount: 1 },
   { name: "thumbnailFile", maxCount: 1 },

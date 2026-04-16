@@ -200,17 +200,14 @@ async function uploadVideo(req, res, next) {
 
     let duration = req.body.duration || "0:00";
 
-    // Automatically use the physical uploaded file if available
+    // Use the Cloudinary URL if video was physically uploaded
     if (req.files && req.files.videoFile) {
-      url = `/uploads/${req.files["videoFile"][0].filename}`;
+      // Cloudinary storage puts the URL in req.files[field][0].path
+      url = req.files["videoFile"][0].path;
     }
 
     if (req.files && req.files.thumbnailFile) {
-      thumbnail = `/uploads/${
-        req.files?.["thumbnailFile"]
-          ? req.files["thumbnailFile"][0].filename
-          : ""
-      }`;
+      thumbnail = req.files["thumbnailFile"][0].path;
     }
 
     if (!title || !author || !tag || !url) {
