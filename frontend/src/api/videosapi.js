@@ -66,6 +66,21 @@ export const uploadVideoFile = async (formData) => {
   return data.data;
 };
 
+/**
+ * Get a signed signature from backend for direct Cloudinary upload
+ */
+export const getCloudinarySignature = async () => {
+  const token = localStorage.getItem("nexus_token") || "";
+  const response = await fetch(`${BACKEND_API_URL}/videos/cloudinary-signature`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!response.ok) throw new Error("Failed to get upload signature");
+  const data = await response.json();
+  return data.data;
+};
+
 export const deleteVideoRequest = async (id) => {
   const token = localStorage.getItem("nexus_token") || "";
   const response = await fetch(`${BACKEND_API_URL}/videos/${id}`, {

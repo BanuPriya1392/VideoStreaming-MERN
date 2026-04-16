@@ -13,9 +13,9 @@ const cloudinaryStorage = new CloudinaryStorage({
       folder: isVideo ? "nexus/videos" : "nexus/thumbnails",
       resource_type: isVideo ? "video" : "image",
       allowed_formats: isVideo
-        ? ["mp4", "mov", "avi", "mkv", "webm"]
-        : ["jpg", "jpeg", "png", "webp"],
-      ...(isVideo ? {} : { transformation: [{ width: 1280, quality: "auto" }] }),
+        ? "mp4,mov,avi,mkv,webm"
+        : "jpg,jpeg,png,webp",
+      ...(isVideo ? {} : { transformation: "q_auto,w_1280" }),
     };
   },
 });
@@ -70,7 +70,31 @@ router.get("/tags", getAllTags);
 // GET  /api/videos/:id
 router.get("/:id", validate(idParamSchema, "params"), getVideoById);
 
-// POST /api/videos/upload (meta upload)
+// GET /api/videos/cloudinary-signature — signed upload credentials for direct browser upload
+router.get("/cloudinary-signature", protect, (req, res) => {
+  try {
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const folder = "nexus/videos";
+    const signature = cloudinary.utils.api_sign_request(
+      { timestamp, folder },
+      process.env.CLOUDINARY_API_SECRET
+    );
+    return res.json({
+      success: true,
+      data: {
+        signature,
+        timestamp,
+        folder,
+        cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+        api_key: process.env.CLOUDINARY_API_KEY,
+      },
+    });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: "Signature generation failed" });
+  }
+});
+
+// POST /api/videos/upload (meta upload — for small files or thumbnails only)
 router.post("/upload", protect, uploadFields, uploadVideo);
 
 // ─── Protected (logged-in users) ──────────────────────────────────────────────
