@@ -414,7 +414,7 @@ const Profile = () => {
                   <img
                     src={userVideos[0].banner || userVideos[0].thumbnail}
                     alt={userVideos[0].title}
-                    className="w-full h-full object-contain relative z-10 contrast-[1.1] brightness-[1.1]"
+                    className="w-full h-full object-cover relative z-10 contrast-[1.1] brightness-[1.1]"
                   />
                   <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                     <div className="w-16 h-16 bg-[#00F0FF] rounded-full flex items-center justify-center text-black shadow-[0_0_30px_rgba(0,240,255,0.5)] scale-90 group-hover:scale-100 transition-transform">

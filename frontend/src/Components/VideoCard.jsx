@@ -34,7 +34,7 @@ const VideoCard = ({ video }) => {
             src={video.thumbnail}
             alt={video.title}
             referrerPolicy="no-referrer"
-            className="w-full h-full object-contain transition-transform duration-700 group-hover:scale-105 contrast-[1.15] brightness-[1.1] relative z-10 drop-shadow-2xl"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 contrast-[1.15] brightness-[1.1] relative z-10 drop-shadow-2xl"
           />
 
           {/* OVERLAY ON HOVER */}
