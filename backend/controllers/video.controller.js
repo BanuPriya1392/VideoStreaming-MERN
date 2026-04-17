@@ -227,11 +227,11 @@ async function uploadVideo(req, res, next) {
 
     await Notification.create({
       user: req.user._id,
-      text: `Uplink successful: ${title} has been integrated into the Nexus.`,
+      text: `Uplink successful: ${safeTitle} has been integrated into the Nexus.`,
     });
 
     const videoObj = video.toObject();
-    const userObj = await User.findOne({ username: author }).lean();
+    const userObj = await User.findOne({ username: safeAuthor }).lean();
     videoObj.authorAvatar = userObj?.profile?.avatarUrl || null;
 
     return res.status(201).json({ success: true, data: videoObj });
