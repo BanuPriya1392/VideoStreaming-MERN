@@ -53,16 +53,10 @@ const {
 const { protect, adminOnly } = require("../middlewares/auth.middleware");
 const { writeLimiter } = require("../middlewares/error.middleware");
 
-// ─── Public ───────────────────────────────────────────────────────────────────
+// ─── STATIC ROUTES (MUST BE AT TOP) ───────────────────────────────────────────
 
-// GET  /api/videos
-router.get("/", validate(listQuerySchema, "query"), getAllVideos);
-
-// GET  /api/videos/tags  (must come before /:id)
+// GET  /api/videos/tags
 router.get("/tags", getAllTags);
-
-// GET  /api/videos/:id
-router.get("/:id", validate(idParamSchema, "params"), getVideoById);
 
 // GET /api/videos/cloudinary-signature — signed upload credentials for direct browser upload
 router.get("/cloudinary-signature", protect, (req, res) => {
@@ -91,9 +85,12 @@ router.get("/cloudinary-signature", protect, (req, res) => {
 // POST /api/videos/upload (meta upload — for direct Cloudinary URLs)
 router.post("/upload", protect, uploadVideo);
 
-// ─── Protected (logged-in users) ──────────────────────────────────────────────
+// ─── COLLECTION ROUTES ────────────────────────────────────────────────────────
 
-// POST /api/videos
+// GET  /api/videos
+router.get("/", validate(listQuerySchema, "query"), getAllVideos);
+
+// POST /api/videos (standard creation)
 router.post(
   "/",
   protect,
@@ -101,6 +98,11 @@ router.post(
   validate(createVideoSchema, "body"),
   createVideo,
 );
+
+// ─── INDIVIDUAL ITEM ROUTES (/:id) ─────────────────────────────────────────────
+
+// GET  /api/videos/:id
+router.get("/:id", validate(idParamSchema, "params"), getVideoById);
 
 // PUT  /api/videos/:id
 router.put(
@@ -130,6 +132,8 @@ router.delete(
   validate(idParamSchema, "params"),
   deleteVideo,
 );
+
+// ─── INTERACTION ROUTES ───────────────────────────────────────────────────────
 
 router.post("/:id/like", protect, validate(idParamSchema, "params"), likeVideo);
 router.post(
