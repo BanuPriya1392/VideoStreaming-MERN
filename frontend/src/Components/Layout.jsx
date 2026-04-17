@@ -310,10 +310,12 @@ const Layout = () => {
     setUploadStatus("uploading");
     setProgress(0);
 
+    let currentStep = "Initializing Nexus Link";
+
     try {
       console.log("Uplink Initialized: Synchronizing signature...");
+      currentStep = "Signature Synchronization";
       
-      // 1. Fetch Cloudinary Signature from Backend
       const token = localStorage.getItem("nexus_token") || "";
       const sigResponse = await axios.get(`${API_BASE_URL}/videos/cloudinary-signature`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -322,34 +324,54 @@ const Layout = () => {
       const { signature, timestamp, api_key, cloud_name, folder } = sigResponse.data.data;
       
       if (!cloud_name || !api_key || !signature) {
-        throw new Error("Axiom Error: Cloudinary configuration incomplete on server. Ensure CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET are set on the backend.");
+        throw new Error("Missing Cloudinary credentials on server. Check Render env vars.");
       }
 
-      console.log(`Signature acquired for cloud: ${cloud_name}. Starting transmission...`);
+      console.log(`Signature acquired for cloud: ${cloud_name}. Activating Uplink Armor...`);
+      currentStep = "Media Transmission (Video)";
 
-      // 2. Upload Video DIRECTLY to Cloudinary
-      const videoData = new FormData();
-      videoData.append("file", videoFile);
-      videoData.append("api_key", api_key);
-      videoData.append("timestamp", timestamp);
-      videoData.append("signature", signature);
-      videoData.append("folder", folder);
+      // --- NATIVE XHR FOR MAXIMUM STABILITY ---
+      const uploadVideoWithXHR = () => {
+        return new Promise((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          const videoData = new FormData();
+          videoData.append("file", videoFile);
+          videoData.append("api_key", api_key);
+          videoData.append("timestamp", timestamp);
+          videoData.append("signature", signature);
+          videoData.append("folder", folder);
 
-      const cloudinaryVideoResponse = await axios.post(
-        `https://api.cloudinary.com/v1_1/${cloud_name}/video/upload`,
-        videoData,
-        {
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setProgress(Math.min(95, percentCompleted)); // Cap at 95 until metadata is sync'd
-          }
-        }
-      );
+          xhr.open("POST", `https://api.cloudinary.com/v1_1/${cloud_name}/video/upload`, true);
 
-      const videoUrl = cloudinaryVideoResponse.data.secure_url;
-      console.log("Media Transmission Successful. Finalizing metadata...");
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const percent = Math.round((e.loaded * 100) / e.total);
+              setProgress(Math.min(95, percent));
+            }
+          };
 
-      // 3. Upload Thumbnail (Optional)
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              resolve(JSON.parse(xhr.responseText));
+            } else {
+              const error = JSON.parse(xhr.responseText || "{}");
+              reject(new Error(error.error?.message || `Uplink Error ${xhr.status}`));
+            }
+          };
+
+          xhr.onerror = () => reject(new Error("Network Disconnection during Media Transmission. Check your internet or ad-blockers."));
+          xhr.onabort = () => reject(new Error("Uplink Aborted by Browser. Re-try with a smaller file or in Incognito mode."));
+          
+          xhr.send(videoData);
+        });
+      };
+
+      const vData = await uploadVideoWithXHR();
+      const videoUrl = vData.secure_url;
+      console.log("Media Transmission Successful. Handling Thumbnail...");
+      currentStep = "Media Transmission (Thumbnail)";
+
+      // Thumbnail (Can stay Axios as it is tiny)
       let thumbUrl = "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=600";
       if (thumbnailFile) {
         const thumbData = new FormData();
@@ -361,12 +383,15 @@ const Layout = () => {
 
         const cloudinaryThumbResponse = await axios.post(
           `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
-          thumbData
+          thumbData,
+          { timeout: 0 }
         );
         thumbUrl = cloudinaryThumbResponse.data.secure_url;
       }
 
-      // 4. Send METADATA ONLY to Backend
+      console.log("Assets Integrated. Synchronizing Legacy Metadata...");
+      currentStep = "Metadata Synchronization";
+
       const cleanTags = aiTags.map(t => t.replace(/[^a-zA-Z]/g, "").trim()).filter(Boolean);
       const formattedTag = (cleanTags[0] || "Other")
         .toLowerCase()
@@ -382,7 +407,8 @@ const Layout = () => {
         url: videoUrl,
         thumbnail: thumbUrl
       }, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
+        timeout: 0
       });
 
       console.log("Nexus Uplink Complete.");
@@ -400,18 +426,8 @@ const Layout = () => {
         window.location.reload();
       }, 1500);
     } catch (err) {
-      console.error("AXIOM UPLINK ERROR:", err);
-      let errorMessage = err.response?.data?.error?.message || err.response?.data?.message || err.message;
-      
-      if (err.message === "Network Error") {
-        errorMessage = "Network Disconnected or Server Unreachable. If you are in production, ensure your Backend (Render) is active and CORS is allowed.";
-      }
-      
-      if (errorMessage === "Failed to fetch") {
-        errorMessage = "Transmission Blocked: Browser failed to reach Cloudinary. This often happens due to AdBlockers or a malformed Cloud Name. Please disable AdBlock and retry.";
-      }
-      
-      alert(`AXIOM UPLINK ERROR: ${errorMessage}`);
+      console.error("AXIOM UPLINK ERROR DETAILS:", err);
+      alert(`AXIOM UPLINK ERROR [${currentStep}]: ${err.message}`);
       setUploadStatus("idle");
       setProgress(0);
     }
