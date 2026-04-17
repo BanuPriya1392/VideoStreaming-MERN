@@ -457,9 +457,12 @@ const Layout = () => {
   };
 
   const resolveUrl = (url) => {
-    if (!url) return url;
+    if (!url || typeof url !== "string" || url === "undefined" || url === "null" || url.trim() === "") return null;
     if (url.startsWith("http")) return url;
-    return `${SERVER_URL}${url}`;
+    if (!SERVER_URL) return null;
+    const base = String(SERVER_URL).endsWith("/") ? String(SERVER_URL).slice(0, -1) : String(SERVER_URL);
+    const path = url.startsWith("/") ? url : `/${url}`;
+    return `${base}${path}`;
   };
 
 

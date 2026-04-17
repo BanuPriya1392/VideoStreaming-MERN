@@ -6,9 +6,10 @@ import { API_BASE_URL as BACKEND_API_URL, SERVER_URL } from "./config";
 
 
 const resolveMediaUrl = (url) => {
-  if (!url || typeof url !== "string") return null;
+  if (!url || typeof url !== "string" || url === "undefined" || url === "null") return null;
   if (url.startsWith("http")) return url;
-  const base = SERVER_URL.endsWith("/") ? SERVER_URL.slice(0, -1) : SERVER_URL;
+  if (!SERVER_URL) return null;
+  const base = String(SERVER_URL).endsWith("/") ? String(SERVER_URL).slice(0, -1) : String(SERVER_URL);
   const path = url.startsWith("/") ? url : `/${url}`;
   return `${base}${path}`;
 };

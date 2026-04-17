@@ -166,15 +166,16 @@ const Profile = () => {
     );
 
   const DEFAULT_BANNER =
-    "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=1200";
+    "https://picsum.photos/id/20/1200/400";
   const DEFAULT_AVATAR =
     "https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=300";
 
   // Resolve media URL helper (same logic as videosapi)
   const resolveUrl = (url) => {
-    if (!url || typeof url !== "string") return null;
+    if (!url || typeof url !== "string" || url === "undefined" || url === "null" || url.trim() === "") return null;
     if (url.startsWith("http")) return url;
-    const base = SERVER_URL.endsWith("/") ? SERVER_URL.slice(0, -1) : SERVER_URL;
+    if (!SERVER_URL) return null;
+    const base = String(SERVER_URL).endsWith("/") ? String(SERVER_URL).slice(0, -1) : String(SERVER_URL);
     const path = url.startsWith("/") ? url : `/${url}`;
     return `${base}${path}`;
   };
@@ -199,7 +200,7 @@ const Profile = () => {
 
       {/* CHANNEL BANNER */}
       <section 
-        className={`relative h-48 md:h-64 overflow-hidden group border-b border-white/5 ${isEditing ? 'cursor-pointer' : ''}`}
+        className={`relative h-48 md:h-64 overflow-hidden group border-b border-white/5 bg-gradient-to-br from-[#0D1223] to-[#0A0E1A] ${isEditing ? 'cursor-pointer' : ''}`}
         onClick={handleBannerClick}
       >
         <img
@@ -208,6 +209,11 @@ const Profile = () => {
               ? resolveUrl(editData.bannerUrl)
               : resolveUrl(profile?.profile?.bannerUrl)) || DEFAULT_BANNER
           }
+          onError={(e) => {
+            if (e.target.src !== DEFAULT_BANNER) {
+              e.target.src = DEFAULT_BANNER;
+            }
+          }}
           alt="Channel Banner"
           className="w-full h-full object-cover object-center transition-all duration-1000 group-hover:scale-110 contrast-[1.1] brightness-[1.1]"
         />
@@ -255,6 +261,11 @@ const Profile = () => {
                   src={
                     resolveUrl(profile?.profile?.avatarUrl) || DEFAULT_AVATAR
                   }
+                  onError={(e) => {
+                    if (e.target.src !== DEFAULT_AVATAR) {
+                      e.target.src = DEFAULT_AVATAR;
+                    }
+                  }}
                   alt={profile?.username}
                   className={`w-full h-full object-cover ${isUploading ? "opacity-30" : ""}`}
                 />
