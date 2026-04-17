@@ -116,7 +116,7 @@ const Profile = () => {
         avatarUrl: updatedUser.profile.avatarUrl,
       }));
     } catch (err) {
-      alert("Avatar upload failed.");
+      alert(err.message || "Avatar upload failed.");
     } finally {
       setIsUploading(false);
     }
@@ -141,7 +141,7 @@ const Profile = () => {
         bannerUrl: updatedUser.profile.bannerUrl,
       }));
     } catch (err) {
-      alert("Banner upload failed.");
+      alert(err.message || "Banner upload failed.");
     } finally {
       setIsUploading(false);
     }

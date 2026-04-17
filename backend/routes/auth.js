@@ -131,8 +131,21 @@ router.post("/login", async (req, res) => {
 router.get("/profile", protect, getProfile);
 router.get("/profile/:username", getProfileByUsername);
 router.put("/profile", protect, updateProfile);
-router.post("/profile/avatar", protect, upload.single("avatar"), uploadAvatar);
-router.post("/profile/banner", protect, upload.single("banner"), uploadBanner);
+const handleUpload = (field) => (req, res, next) => {
+  upload.single(field)(req, res, (err) => {
+    if (err) {
+      console.error(`Multer upload error (${field}):`, err);
+      return res.status(400).json({ 
+        success: false, 
+        message: err.message || `Failed to upload ${field}` 
+      });
+    }
+    next();
+  });
+};
+
+router.post("/profile/avatar", protect, handleUpload("avatar"), uploadAvatar);
+router.post("/profile/banner", protect, handleUpload("banner"), uploadBanner);
 
 // Forgot Password - Send OTP
 router.post("/forgot-password", async (req, res) => {

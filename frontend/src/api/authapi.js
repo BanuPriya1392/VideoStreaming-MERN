@@ -52,7 +52,10 @@ export const uploadAvatarFile = async (file) => {
     body: formData
   });
 
-  if (!response.ok) throw new Error("Avatar upload failed");
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || "Avatar upload failed");
+  }
   const data = await response.json();
   return data.data;
 };
@@ -70,7 +73,10 @@ export const uploadBannerFile = async (file) => {
     body: formData
   });
 
-  if (!response.ok) throw new Error("Banner upload failed");
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.message || "Banner upload failed");
+  }
   const data = await response.json();
   return data.data;
 };
