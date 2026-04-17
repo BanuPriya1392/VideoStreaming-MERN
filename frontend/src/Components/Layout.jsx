@@ -311,15 +311,21 @@ const Layout = () => {
     setProgress(0);
 
     try {
-      setUploadStatus("uploading");
-      setProgress(0);
-
+      console.log("Uplink Initialized: Synchronizing signature...");
+      
       // 1. Fetch Cloudinary Signature from Backend
       const token = localStorage.getItem("nexus_token") || "";
       const sigResponse = await axios.get(`${API_BASE_URL}/videos/cloudinary-signature`, {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
       const { signature, timestamp, api_key, cloud_name, folder } = sigResponse.data.data;
+      
+      if (!cloud_name || !api_key || !signature) {
+        throw new Error("Axiom Error: Cloudinary configuration incomplete on server. Ensure CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET are set on the backend.");
+      }
+
+      console.log(`Signature acquired for cloud: ${cloud_name}. Starting transmission...`);
 
       // 2. Upload Video DIRECTLY to Cloudinary
       const videoData = new FormData();
@@ -329,20 +335,19 @@ const Layout = () => {
       videoData.append("signature", signature);
       videoData.append("folder", folder);
 
-      // Using fetch instead of axios for the large file upload for more transparency and fewer CORS issues
-      const cloudinaryVideoResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/video/upload`, {
-        method: "POST",
-        body: videoData,
-        mode: "cors"
-      });
+      const cloudinaryVideoResponse = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloud_name}/video/upload`,
+        videoData,
+        {
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setProgress(Math.min(95, percentCompleted)); // Cap at 95 until metadata is sync'd
+          }
+        }
+      );
 
-      if (!cloudinaryVideoResponse.ok) {
-        const errorData = await cloudinaryVideoResponse.json();
-        throw new Error(errorData.error?.message || "Cloudinary Uplink Terminated");
-      }
-      
-      const vData = await cloudinaryVideoResponse.json();
-      const videoUrl = vData.secure_url;
+      const videoUrl = cloudinaryVideoResponse.data.secure_url;
+      console.log("Media Transmission Successful. Finalizing metadata...");
 
       // 3. Upload Thumbnail (Optional)
       let thumbUrl = "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=600";
@@ -354,13 +359,11 @@ const Layout = () => {
         thumbData.append("signature", signature);
         thumbData.append("folder", folder);
 
-        const cloudinaryThumbResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`, {
-          method: "POST",
-          body: thumbData,
-          mode: "cors"
-        });
-        const tData = await cloudinaryThumbResponse.json();
-        thumbUrl = tData.secure_url;
+        const cloudinaryThumbResponse = await axios.post(
+          `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
+          thumbData
+        );
+        thumbUrl = cloudinaryThumbResponse.data.secure_url;
       }
 
       // 4. Send METADATA ONLY to Backend
@@ -382,15 +385,14 @@ const Layout = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
+      console.log("Nexus Uplink Complete.");
       setProgress(100);
-
 
       if (user) {
         fetchNotifications().then(setNotifications);
       }
 
       setUploadStatus("success");
-      setProgress(100);
 
       setTimeout(() => {
         setShowUploadModal(false);
@@ -398,14 +400,18 @@ const Layout = () => {
         window.location.reload();
       }, 1500);
     } catch (err) {
-      console.error("Upload error:", err);
-      let backendMessage = err.response?.data?.message || err.message;
+      console.error("AXIOM UPLINK ERROR:", err);
+      let errorMessage = err.response?.data?.error?.message || err.response?.data?.message || err.message;
       
       if (err.message === "Network Error") {
-        backendMessage = "Network Disconnected. Ensure the server is online (Render might be sleeping/restarting) and check your internet.";
+        errorMessage = "Network Disconnected or Server Unreachable. If you are in production, ensure your Backend (Render) is active and CORS is allowed.";
       }
       
-      alert(`AXIOM UPLINK ERROR: ${backendMessage}`);
+      if (errorMessage === "Failed to fetch") {
+        errorMessage = "Transmission Blocked: Browser failed to reach Cloudinary. This often happens due to AdBlockers or a malformed Cloud Name. Please disable AdBlock and retry.";
+      }
+      
+      alert(`AXIOM UPLINK ERROR: ${errorMessage}`);
       setUploadStatus("idle");
       setProgress(0);
     }
