@@ -106,9 +106,10 @@ const validate =
     });
 
     if (error) {
+      const detail = error.details.map((d) => `${d.context?.key}: ${d.message}`).join(", ");
       return res.status(422).json({
         success: false,
-        message: "Validation failed",
+        message: `Nexus Entry Denied [Validation Error]: ${detail}`,
         errors: error.details.map((d) => ({
           field: d.context?.key || d.path.join("."),
           message: d.message,

@@ -356,7 +356,8 @@ const Layout = () => {
       }
 
       // 4. Send METADATA ONLY to Backend
-      const formattedTag = (aiTags[0] || "Other")
+      const cleanTags = aiTags.map(t => t.replace(/[^a-zA-Z]/g, "").trim()).filter(Boolean);
+      const formattedTag = (cleanTags[0] || "Other")
         .toLowerCase()
         .replace(/^\w/, (c) => c.toUpperCase());
 
@@ -364,7 +365,7 @@ const Layout = () => {
         title: title || "Unknown Title",
         description: description || "",
         tag: formattedTag,
-        tags: aiTags,
+        tags: cleanTags,
         author: user?.username || user?.name || "Neural Operative",
         duration: duration || "0:00",
         url: videoUrl,
@@ -390,7 +391,8 @@ const Layout = () => {
       }, 1500);
     } catch (err) {
       console.error("Upload error:", err);
-      alert(err.response?.data?.message || "Uplink failed. Ensure your files are not too large and the backend is active.");
+      const backendMessage = err.response?.data?.message || err.message;
+      alert(`AXIOM UPLINK ERROR: ${backendMessage}`);
       setUploadStatus("idle");
       setProgress(0);
     }
