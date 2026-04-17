@@ -311,14 +311,8 @@ const Layout = () => {
     setProgress(0);
 
     try {
-      // 0. Wait for Backend Readiness (Ping)
-      setUploadStatus("connecting");
-      try {
-        await axios.get(`${API_BASE_URL.replace("/api", "")}/health`, { timeout: 5000 });
-      } catch (pingErr) {
-        console.warn("Backend warming up...", pingErr);
-        // If ping fails once, we'll still try the signature, as health might be a different port/config
-      }
+      setUploadStatus("uploading");
+      setProgress(0);
 
       // 1. Fetch Cloudinary Signature from Backend
       const token = localStorage.getItem("nexus_token") || "";
@@ -338,7 +332,8 @@ const Layout = () => {
       // Using fetch instead of axios for the large file upload for more transparency and fewer CORS issues
       const cloudinaryVideoResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/video/upload`, {
         method: "POST",
-        body: videoData
+        body: videoData,
+        mode: "cors"
       });
 
       if (!cloudinaryVideoResponse.ok) {
@@ -361,7 +356,8 @@ const Layout = () => {
 
         const cloudinaryThumbResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`, {
           method: "POST",
-          body: thumbData
+          body: thumbData,
+          mode: "cors"
         });
         const tData = await cloudinaryThumbResponse.json();
         thumbUrl = tData.secure_url;
