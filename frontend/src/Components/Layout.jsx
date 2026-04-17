@@ -311,6 +311,15 @@ const Layout = () => {
     setProgress(0);
 
     try {
+      // 0. Wait for Backend Readiness (Ping)
+      setUploadStatus("connecting");
+      try {
+        await axios.get(`${API_BASE_URL.replace("/api", "")}/health`, { timeout: 5000 });
+      } catch (pingErr) {
+        console.warn("Backend warming up...", pingErr);
+        // If ping fails once, we'll still try the signature, as health might be a different port/config
+      }
+
       // 1. Fetch Cloudinary Signature from Backend
       const token = localStorage.getItem("nexus_token") || "";
       const sigResponse = await axios.get(`${API_BASE_URL}/videos/cloudinary-signature`, {
@@ -391,7 +400,12 @@ const Layout = () => {
       }, 1500);
     } catch (err) {
       console.error("Upload error:", err);
-      const backendMessage = err.response?.data?.message || err.message;
+      let backendMessage = err.response?.data?.message || err.message;
+      
+      if (err.message === "Network Error") {
+        backendMessage = "Network Disconnected. Ensure the server is online (Render might be sleeping/restarting) and check your internet.";
+      }
+      
       alert(`AXIOM UPLINK ERROR: ${backendMessage}`);
       setUploadStatus("idle");
       setProgress(0);
