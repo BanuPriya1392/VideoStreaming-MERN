@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Play, Clock, ListPlus, Check, FolderPlus } from "lucide-react";
+import { Clock, ListPlus, Check, FolderPlus, Eye } from "lucide-react";
 import { useLibrary } from "../context/LibraryContext";
+import { timeAgo } from "../utils/timeAgo";
 
 const VideoCard = ({ video }) => {
   const { toggleWatchlist, watchlist, playlists, addToPlaylist } = useLibrary();
@@ -143,6 +144,11 @@ const VideoCard = ({ video }) => {
                 ))}
               </div>
             )}
+            <div className="flex items-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
+              <span>{video.views || 0} Views</span>
+              <span className="w-1 h-1 bg-gray-600 rounded-full" />
+              <span>{timeAgo(video.createdAt)}</span>
+            </div>
           </div>
         </div>
       </Link>

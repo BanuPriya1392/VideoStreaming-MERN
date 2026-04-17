@@ -52,8 +52,7 @@ async function uploadAvatar(req, res, next) {
         .json({ success: false, message: "No image file provided" });
     }
 
-    const b64 = Buffer.from(req.file.buffer).toString('base64');
-    const avatarUrl = `data:${req.file.mimetype};base64,${b64}`;
+    const avatarUrl = req.file.path;
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { "profile.avatarUrl": avatarUrl },
@@ -74,8 +73,7 @@ async function uploadBanner(req, res, next) {
         .json({ success: false, message: "No image file provided" });
     }
 
-    const b64 = Buffer.from(req.file.buffer).toString('base64');
-    const bannerUrl = `data:${req.file.mimetype};base64,${b64}`;
+    const bannerUrl = req.file.path;
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { "profile.bannerUrl": bannerUrl },

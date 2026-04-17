@@ -311,36 +311,65 @@ const Layout = () => {
     setProgress(0);
 
     try {
-      const formData = new FormData();
-      formData.append("title", title || "Unknown Title");
-      formData.append("description", description || "");
-      formData.append("tag", aiTags[0] || "Other");
-      aiTags.forEach((t) => formData.append("tags[]", t));
-      formData.append(
-        "author",
-        user?.username || user?.name || "Neural Operative",
+      // 1. Fetch Cloudinary Signature from Backend
+      const token = localStorage.getItem("nexus_token") || "";
+      const sigResponse = await axios.get(`${API_BASE_URL}/videos/cloudinary-signature`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const { signature, timestamp, api_key, cloud_name, folder } = sigResponse.data.data;
+
+      // 2. Upload Video DIRECTLY to Cloudinary
+      const videoData = new FormData();
+      videoData.append("file", videoFile);
+      videoData.append("api_key", api_key);
+      videoData.append("timestamp", timestamp);
+      videoData.append("signature", signature);
+      videoData.append("folder", folder);
+
+      const cloudinaryVideoResponse = await axios.post(
+        `https://api.cloudinary.com/v1_1/${cloud_name}/video/upload`,
+        videoData,
+        {
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setProgress(percentCompleted * 0.9); // Reserve last 10% for metadata
+          }
+        }
       );
-      formData.append("duration", duration || "0:00");
-      formData.append("videoFile", videoFile);
+      const videoUrl = cloudinaryVideoResponse.data.secure_url;
+
+      // 3. Upload Thumbnail (Optional)
+      let thumbUrl = "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=600";
       if (thumbnailFile) {
-        formData.append("thumbnailFile", thumbnailFile);
+        const thumbData = new FormData();
+        thumbData.append("file", thumbnailFile);
+        thumbData.append("api_key", api_key);
+        thumbData.append("timestamp", timestamp);
+        thumbData.append("signature", signature);
+        thumbData.append("folder", folder);
+
+        const cloudinaryThumbResponse = await axios.post(
+          `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
+          thumbData
+        );
+        thumbUrl = cloudinaryThumbResponse.data.secure_url;
       }
 
-      // Use axios for real progress tracking
-      const token = localStorage.getItem("nexus_token") || "";
-
-      await axios.post(`${API_BASE_URL}/videos/upload`, formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          setProgress(percentCompleted);
-        },
+      // 4. Send METADATA ONLY to Backend
+      await axios.post(`${API_BASE_URL}/videos/upload`, {
+        title: title || "Unknown Title",
+        description: description || "",
+        tag: aiTags[0] || "Other",
+        "tags[]": aiTags,
+        author: user?.username || user?.name || "Neural Operative",
+        duration: duration || "0:00",
+        url: videoUrl,
+        thumbnail: thumbUrl
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
       });
+
+      setProgress(100);
 
 
       if (user) {

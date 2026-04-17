@@ -23,6 +23,7 @@ import {
 import { AuthContext } from "../App";
 import { SERVER_URL } from "../api/config";
 import { fetchProfile, fetchProfileByUsername, updateProfile, uploadAvatarFile, uploadBannerFile } from "../api/authapi";
+import { timeAgo } from "../utils/timeAgo";
 
 import { fetchVideos, deleteVideoRequest } from "../api/videosapi";
 import VideoCard from "../Components/VideoCard";
@@ -422,7 +423,7 @@ const Profile = () => {
                       "Nexus transmission data pending. Standard operative feed initiated."}
                   </p>
                   <div className="text-xs font-bold text-[#00F0FF] uppercase tracking-widest">
-                    {userVideos[0].views} Views • {userVideos[0].time}
+                    {userVideos[0].views} Views • {timeAgo(userVideos[0].createdAt)}
                   </div>
                 </div>
               </div>

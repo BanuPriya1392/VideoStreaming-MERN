@@ -87,8 +87,8 @@ router.get("/cloudinary-signature", protect, (req, res) => {
   }
 });
 
-// POST /api/videos/upload (meta upload — for small files or thumbnails only)
-router.post("/upload", protect, uploadFields, uploadVideo);
+// POST /api/videos/upload (meta upload — for direct Cloudinary URLs)
+router.post("/upload", protect, uploadVideo);
 
 // ─── Protected (logged-in users) ──────────────────────────────────────────────
 

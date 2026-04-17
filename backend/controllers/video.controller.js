@@ -208,6 +208,9 @@ async function uploadVideo(req, res, next) {
 
     if (req.files && req.files.thumbnailFile) {
       thumbnail = req.files["thumbnailFile"][0].path;
+    } else if (url && (url.includes("cloudinary.com") || url.includes("res.cloudinary.com"))) {
+      // Auto-generate high-quality thumbnail from video if missing
+      thumbnail = url.replace(/\.[^/.]+$/, ".jpg");
     }
 
     if (!title || !author || !tag || !url) {

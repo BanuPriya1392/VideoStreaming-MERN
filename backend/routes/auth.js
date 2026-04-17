@@ -8,7 +8,16 @@ const sendEmail = require("../utils/sendEmail");
 const multer = require("multer");
 const path = require("path");
 
-const storage = multer.memoryStorage();
+const cloudinary = require("../config/cloudinary");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "nexus/profiles",
+    resource_type: "image",
+  },
+});
 const upload = multer({ storage: storage });
 
 const router = express.Router();
