@@ -335,17 +335,19 @@ const Layout = () => {
       videoData.append("signature", signature);
       videoData.append("folder", folder);
 
-      const cloudinaryVideoResponse = await axios.post(
-        `https://api.cloudinary.com/v1_1/${cloud_name}/video/upload`,
-        videoData,
-        {
-          onUploadProgress: (progressEvent) => {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-            setProgress(percentCompleted * 0.9); // Reserve last 10% for metadata
-          }
-        }
-      );
-      const videoUrl = cloudinaryVideoResponse.data.secure_url;
+      // Using fetch instead of axios for the large file upload for more transparency and fewer CORS issues
+      const cloudinaryVideoResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/video/upload`, {
+        method: "POST",
+        body: videoData
+      });
+
+      if (!cloudinaryVideoResponse.ok) {
+        const errorData = await cloudinaryVideoResponse.json();
+        throw new Error(errorData.error?.message || "Cloudinary Uplink Terminated");
+      }
+      
+      const vData = await cloudinaryVideoResponse.json();
+      const videoUrl = vData.secure_url;
 
       // 3. Upload Thumbnail (Optional)
       let thumbUrl = "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=600";
@@ -357,11 +359,12 @@ const Layout = () => {
         thumbData.append("signature", signature);
         thumbData.append("folder", folder);
 
-        const cloudinaryThumbResponse = await axios.post(
-          `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
-          thumbData
-        );
-        thumbUrl = cloudinaryThumbResponse.data.secure_url;
+        const cloudinaryThumbResponse = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`, {
+          method: "POST",
+          body: thumbData
+        });
+        const tData = await cloudinaryThumbResponse.json();
+        thumbUrl = tData.secure_url;
       }
 
       // 4. Send METADATA ONLY to Backend
