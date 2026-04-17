@@ -356,11 +356,15 @@ const Layout = () => {
       }
 
       // 4. Send METADATA ONLY to Backend
+      const formattedTag = (aiTags[0] || "Other")
+        .toLowerCase()
+        .replace(/^\w/, (c) => c.toUpperCase());
+
       await axios.post(`${API_BASE_URL}/videos/upload`, {
         title: title || "Unknown Title",
         description: description || "",
-        tag: aiTags[0] || "Other",
-        "tags[]": aiTags,
+        tag: formattedTag,
+        tags: aiTags,
         author: user?.username || user?.name || "Neural Operative",
         duration: duration || "0:00",
         url: videoUrl,

@@ -64,6 +64,17 @@ const patchVideoSchema = Joi.object({
   description: fields.description,
 }).min(1);
 
+const directUploadSchema = Joi.object({
+  title: fields.title.required(),
+  description: fields.description.optional(),
+  tag: fields.tag.required(),
+  tags: Joi.array().items(Joi.string()).optional(),
+  author: fields.author.required(),
+  duration: Joi.string().optional(),
+  url: fields.url.required(),
+  thumbnail: fields.thumbnail.required(),
+});
+
 const listQuerySchema = Joi.object({
   tag: Joi.string()
     .valid(...VALID_TAGS)
@@ -114,6 +125,7 @@ module.exports = {
   createVideoSchema,
   updateVideoSchema,
   patchVideoSchema,
+  directUploadSchema,
   listQuerySchema,
   idParamSchema,
 };

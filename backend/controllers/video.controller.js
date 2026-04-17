@@ -193,9 +193,11 @@ async function uploadVideo(req, res, next) {
       "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=600";
     let author = req.body.author || "Unknown";
     let tag = req.body.tag || "Other";
+    // Normalize to Title Case (e.g., MUSIC -> Music)
+    tag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
 
-    // Handle multiple tags from frontend (tags[])
-    let tagsInput = req.body["tags[]"] || [tag];
+    // Handle multiple tags from frontend (tags or tags[])
+    let tagsInput = req.body.tags || req.body["tags[]"] || [tag];
     if (typeof tagsInput === "string") tagsInput = [tagsInput];
 
     let duration = req.body.duration || "0:00";

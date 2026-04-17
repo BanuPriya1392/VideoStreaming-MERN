@@ -45,6 +45,7 @@ const {
   createVideoSchema,
   updateVideoSchema,
   patchVideoSchema,
+  directUploadSchema,
   listQuerySchema,
   idParamSchema,
 } = require("../validators/video.validator");
@@ -88,7 +89,7 @@ router.get("/cloudinary-signature", protect, (req, res) => {
 });
 
 // POST /api/videos/upload (meta upload — for direct Cloudinary URLs)
-router.post("/upload", protect, uploadVideo);
+router.post("/upload", protect, validate(directUploadSchema, "body"), uploadVideo);
 
 // ─── Protected (logged-in users) ──────────────────────────────────────────────
 
