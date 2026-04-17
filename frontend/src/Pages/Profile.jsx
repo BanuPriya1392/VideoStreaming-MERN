@@ -166,15 +166,17 @@ const Profile = () => {
     );
 
   const DEFAULT_BANNER =
-    "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=1200";
+    "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=1200";
   const DEFAULT_AVATAR =
     "https://images.unsplash.com/photo-1633332755192-727a05c4013d?auto=format&fit=crop&q=80&w=300";
 
   // Resolve media URL helper (same logic as videosapi)
   const resolveUrl = (url) => {
-    if (!url) return url;
+    if (!url || typeof url !== "string") return null;
     if (url.startsWith("http")) return url;
-    return `${SERVER_URL}${url}`;
+    const base = SERVER_URL.endsWith("/") ? SERVER_URL.slice(0, -1) : SERVER_URL;
+    const path = url.startsWith("/") ? url : `/${url}`;
+    return `${base}${path}`;
   };
 
   return (
@@ -202,9 +204,9 @@ const Profile = () => {
       >
         <img
           src={
-            isEditing
-              ? resolveUrl(editData.bannerUrl) || DEFAULT_BANNER
-              : resolveUrl(profile?.profile?.bannerUrl) || DEFAULT_BANNER
+            (isEditing
+              ? resolveUrl(editData.bannerUrl)
+              : resolveUrl(profile?.profile?.bannerUrl)) || DEFAULT_BANNER
           }
           alt="Channel Banner"
           className="w-full h-full object-cover object-center transition-all duration-1000 group-hover:scale-110 contrast-[1.1] brightness-[1.1]"
@@ -393,13 +395,13 @@ const Profile = () => {
                 <div className="lg:w-[45%] aspect-video rounded-3xl overflow-hidden relative group cursor-pointer shadow-2xl bg-black">
                   {/* BLURRED BACKGROUND */}
                   <img
-                    src={userVideos[0].thumbnail}
+                    src={userVideos[0].banner || userVideos[0].thumbnail}
                     alt=""
                     className="absolute inset-0 w-full h-full object-cover scale-125 blur-3xl opacity-60"
                   />
                   {/* MAIN IMAGE */}
                   <img
-                    src={userVideos[0].thumbnail}
+                    src={userVideos[0].banner || userVideos[0].thumbnail}
                     alt={userVideos[0].title}
                     className="w-full h-full object-contain relative z-10 contrast-[1.1] brightness-[1.1]"
                   />

@@ -31,8 +31,9 @@ const HomePage = () => {
       >
         <img
           src={
+            featuredVideo?.banner ||
             featuredVideo?.thumbnail ||
-            "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=1200"
+            "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&q=80&w=1200"
           }
           className="absolute inset-0 w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-105 contrast-[1.1] brightness-[1.1]"
           alt="Featured"

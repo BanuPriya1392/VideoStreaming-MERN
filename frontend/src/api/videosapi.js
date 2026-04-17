@@ -6,9 +6,11 @@ import { API_BASE_URL as BACKEND_API_URL, SERVER_URL } from "./config";
 
 
 const resolveMediaUrl = (url) => {
-  if (!url) return url;
+  if (!url || typeof url !== "string") return null;
   if (url.startsWith("http")) return url;
-  return `${SERVER_URL}${url}`;
+  const base = SERVER_URL.endsWith("/") ? SERVER_URL.slice(0, -1) : SERVER_URL;
+  const path = url.startsWith("/") ? url : `/${url}`;
+  return `${base}${path}`;
 };
 
 async function fetchFromBackend(category = "All", searchTerm = "", author = "") {
@@ -30,7 +32,8 @@ async function fetchFromBackend(category = "All", searchTerm = "", author = "") 
     ...v,
     id: v._id || v.id,
     url: resolveMediaUrl(v.url),
-    thumbnail: resolveMediaUrl(v.thumbnail)
+    thumbnail: resolveMediaUrl(v.thumbnail),
+    banner: resolveMediaUrl(v.banner)
   }));
 }
 
@@ -138,6 +141,7 @@ export const fetchVideoById = async (id) => {
       videoObj.id = videoObj._id || videoObj.id;
       videoObj.url = resolveMediaUrl(videoObj.url);
       videoObj.thumbnail = resolveMediaUrl(videoObj.thumbnail);
+      videoObj.banner = resolveMediaUrl(videoObj.banner);
     }
     return videoObj || null;
   } catch (error) {
@@ -176,6 +180,7 @@ export const fetchRecommendations = async (videoId) => {
     ...v,
     id: v._id || v.id,
     url: resolveMediaUrl(v.url),
-    thumbnail: resolveMediaUrl(v.thumbnail)
+    thumbnail: resolveMediaUrl(v.thumbnail),
+    banner: resolveMediaUrl(v.banner)
   }));
 };

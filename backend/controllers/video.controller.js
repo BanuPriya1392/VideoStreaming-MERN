@@ -15,6 +15,7 @@ function sheetyRowToDoc(row) {
     url: row.url,
     duration: row.duration || "0:00",
     thumbnail: row.thumbnail || "",
+    banner: row.banner || "",
     description: row.description || "",
   };
 }
@@ -30,6 +31,7 @@ function docToSheetyPayload(doc) {
       url: doc.url,
       duration: doc.duration,
       thumbnail: doc.thumbnail,
+      banner: doc.banner,
       description: doc.description,
     },
   };
@@ -201,10 +203,12 @@ async function uploadVideo(req, res, next) {
     // 3. URLs
     let url = req.body.url;
     let thumbnail = req.body.thumbnail || "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=600";
+    let banner = req.body.banner || thumbnail;
 
     // 4. File Fallbacks (if anyone still uses multipart)
     if (req.files && req.files.videoFile) url = req.files["videoFile"][0].path;
     if (req.files && req.files.thumbnailFile) thumbnail = req.files["thumbnailFile"][0].path;
+    if (req.files && req.files.bannerFile) banner = req.files["bannerFile"][0].path;
     
     // 5. Validation Check
     if (!url) {
@@ -221,6 +225,7 @@ async function uploadVideo(req, res, next) {
       duration: req.body.duration || "0:00",
       url,
       thumbnail,
+      banner,
       description: safeDescription,
       tags: req.body.tags || req.body["tags[]"] || [tag],
     });

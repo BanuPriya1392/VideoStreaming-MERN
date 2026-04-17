@@ -28,6 +28,9 @@ const fields = {
   thumbnail: Joi.string()
     .uri({ scheme: ["http", "https"] })
     .allow(""),
+  banner: Joi.string()
+    .uri({ scheme: ["http", "https"] })
+    .allow(""),
   description: Joi.string().max(500).trim().allow(""),
 };
 
@@ -39,6 +42,7 @@ const createVideoSchema = Joi.object({
   time: fields.time.required(),
   url: fields.url.required(),
   thumbnail: fields.thumbnail.required(),
+  banner: fields.banner.optional(),
   description: fields.description.required(),
 });
 
@@ -50,6 +54,7 @@ const updateVideoSchema = Joi.object({
   time: fields.time.required(),
   url: fields.url.required(),
   thumbnail: fields.thumbnail.required(),
+  banner: fields.banner.optional(),
   description: fields.description.required(),
 });
 
@@ -61,6 +66,7 @@ const patchVideoSchema = Joi.object({
   time: fields.time,
   url: fields.url,
   thumbnail: fields.thumbnail,
+  banner: fields.banner,
   description: fields.description,
 }).min(1);
 
@@ -73,6 +79,7 @@ const directUploadSchema = Joi.object({
   duration: Joi.string().optional(),
   url: fields.url.required(),
   thumbnail: fields.thumbnail.required(),
+  banner: fields.banner.optional(),
 });
 
 const listQuerySchema = Joi.object({

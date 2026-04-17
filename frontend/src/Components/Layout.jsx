@@ -58,6 +58,7 @@ const Layout = () => {
 
   const [aiTags, setAiTags] = useState([]);
   const [thumbnailFile, setThumbnailFile] = useState(null);
+  const [bannerFile, setBannerFile] = useState(null);
   const [duration, setDuration] = useState("");
 
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -221,51 +222,50 @@ const Layout = () => {
     return () => window.removeEventListener("click", handleGlobalClick);
   }, []);
 
-  const generateThumbnail = (file) => {
+  const generateMediaAssets = (file) => {
     return new Promise((resolve) => {
       const video = document.createElement("video");
-      video.preload = "metadata";
+      video.preload = "auto";
       video.muted = true;
       video.src = URL.createObjectURL(file);
-      video.onloadedmetadata = () => {
-        video.currentTime = Math.max(video.duration * 0.1, 0.5);
+
+      const captureFrame = (width, height, quality = 0.9) => {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(video, 0, 0, width, height);
+        return new Promise((res) => {
+          canvas.toBlob((blob) => res(blob), "image/jpeg", quality);
+        });
       };
-      video.onseeked = () => {
-        // Small delay to ensure the frame is fully decoded and sharp for HD
-        setTimeout(() => {
-          const canvas = document.createElement("canvas");
-          
-          // Optimization: CAP resolution at 1280px width even for 4K videos
-          // This keeps the file size small (fast upload) while remaining HD
-          const maxDim = 1280;
-          let width = video.videoWidth;
-          let height = video.videoHeight;
-          if (width > maxDim) {
-            height = (maxDim / width) * height;
-            width = maxDim;
-          }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext("2d");
-          ctx.drawImage(video, 0, 0, width, height);
+      video.onloadedmetadata = () => {
+        // Seek to 10% or 1s whichever is better to avoid black frames at start
+        video.currentTime = Math.min(Math.max(video.duration * 0.1, 1), video.duration * 0.9);
+      };
 
-          canvas.toBlob(
-            (blob) => {
-              const thumbFile = new File([blob], "thumbnail.jpg", {
-                type: "image/jpeg",
-              });
-              const duration = video.duration;
-              const minutes = Math.floor(duration / 60);
-              const seconds = Math.floor(duration % 60);
-              const durationStr = `${minutes}:${seconds.toString().padStart(2, "0")}`;
-              resolve({ thumbFile, duration: durationStr });
-            },
-            "image/jpeg",
-            0.9, // 0.9 is 70% smaller than 1.0 but visually identical
-          );
-          URL.revokeObjectURL(video.src);
-        }, 150);
+      video.onseeked = async () => {
+        // High quality BANNER (1280x720)
+        const bannerBlob = await captureFrame(1280, 720, 0.95);
+        const bannerFile = new File([bannerBlob], "banner.jpg", { type: "image/jpeg" });
+
+        // Medium quality THUMBNAIL (640x360)
+        const thumbBlob = await captureFrame(640, 360, 0.85);
+        const thumbFile = new File([thumbBlob], "thumbnail.jpg", { type: "image/jpeg" });
+
+        const duration = video.duration;
+        const minutes = Math.floor(duration / 60);
+        const seconds = Math.floor(duration % 60);
+        const durationStr = `${minutes}:${seconds.toString().padStart(2, "0")}`;
+
+        URL.revokeObjectURL(video.src);
+        resolve({ thumbFile, bannerFile, duration: durationStr });
+      };
+
+      video.onerror = () => {
+        console.error("Video processing failed");
+        resolve({ thumbFile: null, bannerFile: null, duration: "0:00" });
       };
     });
   };
@@ -277,9 +277,10 @@ const Layout = () => {
       setPreviewUrl(URL.createObjectURL(file));
       const baseName = file.name.replace(/\.[^/.]+$/, "").replace(/[_-]/g, " ");
       setTitle(baseName.replace(/\b\w/g, (l) => l.toUpperCase()));
-      const { thumbFile, duration: capturedDuration } =
-        await generateThumbnail(file);
+      const { thumbFile, bannerFile: capturedBanner, duration: capturedDuration } =
+        await generateMediaAssets(file);
       setThumbnailFile(thumbFile);
+      setBannerFile(capturedBanner);
       setDuration(capturedDuration);
     }
   };
@@ -368,25 +369,32 @@ const Layout = () => {
 
       const vData = await uploadVideoWithXHR();
       const videoUrl = vData.secure_url;
-      console.log("Media Transmission Successful. Handling Thumbnail...");
-      currentStep = "Media Transmission (Thumbnail)";
+      console.log("Media Transmission Successful. Handling Assets...");
+      currentStep = "Asset Processing (Thumb/Banner)";
 
-      // Thumbnail (Can stay Axios as it is tiny)
+      // Thumbnail & Banner (Can stay Axios as they are small)
       let thumbUrl = "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=600";
-      if (thumbnailFile) {
-        const thumbData = new FormData();
-        thumbData.append("file", thumbnailFile);
-        thumbData.append("api_key", api_key);
-        thumbData.append("timestamp", timestamp);
-        thumbData.append("signature", signature);
-        thumbData.append("folder", folder);
+      let capturedBannerUrl = thumbUrl;
 
-        const cloudinaryThumbResponse = await axios.post(
-          `https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`,
-          thumbData,
-          { timeout: 0 }
-        );
-        thumbUrl = cloudinaryThumbResponse.data.secure_url;
+      const uploadImage = async (file, name) => {
+        const data = new FormData();
+        data.append("file", file);
+        data.append("api_key", api_key);
+        data.append("timestamp", timestamp);
+        data.append("signature", signature);
+        data.append("folder", folder);
+        console.log(`Transmitting ${name}...`);
+        const res = await axios.post(`https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`, data, { timeout: 0 });
+        return res.data.secure_url;
+      };
+
+      if (thumbnailFile) {
+        thumbUrl = await uploadImage(thumbnailFile, "Thumbnail");
+      }
+      if (bannerFile) {
+        capturedBannerUrl = await uploadImage(bannerFile, "Banner");
+      } else {
+        capturedBannerUrl = thumbUrl;
       }
 
       console.log("Assets Integrated. Synchronizing Legacy Metadata...");
@@ -405,7 +413,8 @@ const Layout = () => {
         author: user?.username || user?.name || "Neural Operative",
         duration: duration || "0:00",
         url: videoUrl,
-        thumbnail: thumbUrl
+        thumbnail: thumbUrl,
+        banner: capturedBannerUrl
       }, {
         headers: { Authorization: `Bearer ${token}` },
         timeout: 0
@@ -442,6 +451,7 @@ const Layout = () => {
     setDescription("");
     setAiTags([]);
     setThumbnailFile(null);
+    setBannerFile(null);
     setUploadStatus("idle");
     setProgress(0);
   };

@@ -57,6 +57,11 @@ const videoSchema = new mongoose.Schema(
       trim: true,
       default: "",
     },
+    banner: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     description: {
       type: String,
       trim: true,
