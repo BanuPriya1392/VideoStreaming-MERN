@@ -186,54 +186,43 @@ async function updateVideo(req, res, next) {
 
 async function uploadVideo(req, res, next) {
   try {
-    const { title, views, description } = req.body;
-    let url = req.body.url;
-    let thumbnail =
-      req.body.thumbnail ||
-      "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=600";
-    let author = req.body.author || "Unknown";
+    // 1. Basic Field Extraction & Fallbacks
+    const safeTitle = (req.body.title || "Untitled Transmission").substring(0, 200);
+    const safeDescription = (req.body.description || "").substring(0, 500);
+    const safeAuthor = (req.body.author || "Nexus Operative").substring(0, 100);
+    
+    // 2. Tag Normalization
     let tag = req.body.tag || "Other";
-    // Normalize to Title Case (e.g., MUSIC -> Music)
     tag = tag.charAt(0).toUpperCase() + tag.slice(1).toLowerCase();
+    
+    const validTags = ["AI", "Music", "Gaming", "Live", "Tech", "Education", "Cinema", "Science", "Lifestyle", "Family", "Sports", "Vlog", "Other"];
+    if (!validTags.includes(tag)) tag = "Other";
 
-    // Handle multiple tags from frontend (tags or tags[])
-    let tagsInput = req.body.tags || req.body["tags[]"] || [tag];
-    if (typeof tagsInput === "string") tagsInput = [tagsInput];
+    // 3. URLs
+    let url = req.body.url;
+    let thumbnail = req.body.thumbnail || "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&q=80&w=600";
 
-    let duration = req.body.duration || "0:00";
-
-    // Use the Cloudinary URL if video was physically uploaded
-    if (req.files && req.files.videoFile) {
-      // Cloudinary storage puts the URL in req.files[field][0].path
-      url = req.files["videoFile"][0].path;
+    // 4. File Fallbacks (if anyone still uses multipart)
+    if (req.files && req.files.videoFile) url = req.files["videoFile"][0].path;
+    if (req.files && req.files.thumbnailFile) thumbnail = req.files["thumbnailFile"][0].path;
+    
+    // 5. Validation Check
+    if (!url) {
+      return res.status(400).json({ success: false, message: "Uplink failed: No video source found." });
     }
 
-    if (req.files && req.files.thumbnailFile) {
-      thumbnail = req.files["thumbnailFile"][0].path;
-    } else if (url && (url.includes("cloudinary.com") || url.includes("res.cloudinary.com"))) {
-      // Auto-generate high-quality thumbnail from video if missing
-      thumbnail = url.replace(/\.[^/.]+$/, ".jpg");
-    }
-
-    if (!title || !author || !tag || !url) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "title, author, tag and url (or videoFile) are required for upload",
-      });
-    }
-
+    // 6. DB Creation
     const video = await Video.create({
-      title,
-      author,
-      tag,
-      views: views || "0",
+      title: safeTitle,
+      author: safeAuthor,
+      tag: tag,
+      views: req.body.views || "0",
       time: "Just now",
-      duration: duration || "0:00",
+      duration: req.body.duration || "0:00",
       url,
       thumbnail,
-      description: description || "",
-      tags: tagsInput,
+      description: safeDescription,
+      tags: req.body.tags || req.body["tags[]"] || [tag],
     });
 
     await Notification.create({

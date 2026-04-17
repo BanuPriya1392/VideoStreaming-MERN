@@ -89,7 +89,7 @@ router.get("/cloudinary-signature", protect, (req, res) => {
 });
 
 // POST /api/videos/upload (meta upload — for direct Cloudinary URLs)
-router.post("/upload", protect, validate(directUploadSchema, "body"), uploadVideo);
+router.post("/upload", protect, uploadVideo);
 
 // ─── Protected (logged-in users) ──────────────────────────────────────────────
 
