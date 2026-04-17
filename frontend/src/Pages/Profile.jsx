@@ -259,7 +259,9 @@ const Profile = () => {
               <div className="w-full h-full bg-[#0D1223] rounded-full overflow-hidden border-4 border-[#0A0E1A] relative">
                 <img
                   src={
-                    resolveUrl(profile?.profile?.avatarUrl) || DEFAULT_AVATAR
+                    (isEditing
+                      ? resolveUrl(editData.avatarUrl)
+                      : resolveUrl(profile?.profile?.avatarUrl)) || DEFAULT_AVATAR
                   }
                   onError={(e) => {
                     if (e.target.src !== DEFAULT_AVATAR) {
@@ -267,7 +269,7 @@ const Profile = () => {
                     }
                   }}
                   alt={profile?.username}
-                  className={`w-full h-full object-cover ${isUploading ? "opacity-30" : ""}`}
+                  className={`w-full h-full object-cover transition-all duration-500 ${isUploading ? "opacity-30" : ""}`}
                 />
 
                 {isEditing && (
