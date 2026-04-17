@@ -194,15 +194,28 @@ router.post("/reset-password", async (req, res) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-    const normalizedOtp = otp.trim();
+    const normalizedOtp = otp.toString().trim();
+    console.log(`DEBUG: Reset attempt for ${normalizedEmail}`);
+    console.log(`DEBUG: Entered OTP: "${normalizedOtp}"`);
 
     const user = await User.findOne({
       email: normalizedEmail,
-      resetPasswordOTP: normalizedOtp,
-      resetPasswordOTPExpire: { $gt: new Date() },
     });
 
     if (!user) {
+      console.log("DEBUG: User not found with this email");
+      return res.status(400).json({ success: false, message: "Invalid verification code or code expired" });
+    }
+
+    console.log(`DEBUG: Stored OTP: "${user.resetPasswordOTP}"`);
+    console.log(`DEBUG: Expiry: ${user.resetPasswordOTPExpire}`);
+    console.log(`DEBUG: Current Time: ${new Date()}`);
+
+    const isOtpMatching = user.resetPasswordOTP === normalizedOtp;
+    const isNotExpired = user.resetPasswordOTPExpire && user.resetPasswordOTPExpire > Date.now();
+
+    if (!isOtpMatching || !isNotExpired) {
+      console.log(`DEBUG: Match: ${isOtpMatching}, Not Expired: ${isNotExpired}`);
       return res.status(400).json({ success: false, message: "Invalid verification code or code expired" });
     }
 

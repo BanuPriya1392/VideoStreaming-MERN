@@ -67,7 +67,7 @@ router.get("/:id", validate(idParamSchema, "params"), getVideoById);
 router.get("/cloudinary-signature", protect, (req, res) => {
   try {
     const timestamp = Math.round(new Date().getTime() / 1000);
-    const folder = "nexus/videos";
+    const folder = "nexus";
     const signature = cloudinary.utils.api_sign_request(
       { timestamp, folder },
       process.env.CLOUDINARY_API_SECRET
