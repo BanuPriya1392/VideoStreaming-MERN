@@ -29,7 +29,7 @@ async function updateProfile(req, res, next) {
     }
 
     const user = await User.findByIdAndUpdate(req.user._id, { $set: updates }, {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
       select: "-password",
     });
@@ -56,7 +56,7 @@ async function uploadAvatar(req, res, next) {
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { "profile.avatarUrl": avatarUrl },
-      { new: true, select: "-password" },
+      { returnDocument: "after", select: "-password" },
     );
 
     return res.status(200).json({ success: true, data: user });
@@ -77,7 +77,7 @@ async function uploadBanner(req, res, next) {
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { "profile.bannerUrl": bannerUrl },
-      { new: true, select: "-password" },
+      { returnDocument: "after", select: "-password" },
     );
 
     return res.status(200).json({ success: true, data: user });

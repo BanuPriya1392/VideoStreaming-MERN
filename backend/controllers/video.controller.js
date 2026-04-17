@@ -166,7 +166,7 @@ async function updateVideo(req, res, next) {
     var video = await Video.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
     if (!video) {
       return res
@@ -250,7 +250,7 @@ async function patchVideo(req, res, next) {
     var video = await Video.findByIdAndUpdate(
       req.params.id,
       { $set: req.body },
-      { new: true, runValidators: true },
+      { returnDocument: "after", runValidators: true },
     );
     if (!video) {
       return res
